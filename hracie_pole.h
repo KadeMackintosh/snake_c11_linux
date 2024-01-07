@@ -6,7 +6,7 @@
 #define BOARD_SIZE_X 800
 #define BOARD_SIZE_Y 800
 
-enum CellType {
+static enum CellType {
     PRAZDNE,
     HAD,
     JEDLO

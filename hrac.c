@@ -8,14 +8,14 @@
 HRAC* vytvorHraca(const char* meno, int dlzka) {
     HRAC* novyHrac = malloc(sizeof(HRAC));
     if (novyHrac == NULL) {
-        fprintf(stderr, "Chyba pri vytvarani hraca");
+        //fprintf(stderr, "Chyba pri vytvarani hraca");
         return NULL;
     }
 
     novyHrac->meno = malloc(strlen(meno) + 1); // +1 pre ten \0 terminator
     if (novyHrac->meno == NULL) {
         free(novyHrac);
-        fprintf(stderr, "Chyba pri priradeni mena hracovi");
+        //fprintf(stderr, "Chyba pri priradeni mena hracovi");
         return NULL;
     }
 

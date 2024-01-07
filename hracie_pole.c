@@ -6,7 +6,7 @@
 #include "menu.h"
 
 #define V_BUNKA 10
-#define FRAME_RATE 2
+#define FRAME_RATE 200
 #define MAX_HRACI 2
 SDL_Window* windowGame = NULL;
 SDL_Renderer* rendererGame = NULL;
@@ -22,7 +22,7 @@ HRAC* poleHracov[MAX_HRACI];
 int quit = 0;
 
 void randomFood() {
-
+	SDL_Rect cellRect;
 	int foodX = rand() % (BOARD_SIZE_X / V_BUNKA);
 	int foodY = rand() % (BOARD_SIZE_Y / V_BUNKA);
 
@@ -30,9 +30,16 @@ void randomFood() {
 		foodX = rand() % BOARD_SIZE_X;
 		foodY = rand() % BOARD_SIZE_Y;
 	}
-	printf("foodX: %d, foodY: %d\n", foodX, foodY);
+	//printf("foodX: %d, foodY: %d\n", foodX, foodY);
 
 	gameBoard[foodX][foodY] = JEDLO;
+	SDL_SetRenderDrawColor(rendererGame, 255, 211, 30, 255);
+	cellRect.x = foodX * V_BUNKA;
+	cellRect.y = foodY * V_BUNKA;
+	cellRect.h = V_BUNKA;
+	cellRect.w = V_BUNKA;
+	SDL_RenderFillRect(rendererGame, &cellRect);
+	SDL_RenderPresent(rendererGame);
 }
 
 void initBoard(HRAC* hrac) {
@@ -56,11 +63,11 @@ void initBoard(HRAC* hrac) {
 	// Load the image only once outside the loop
 	imageSurface = IMG_Load("images/apple_small.png");
 	if (!imageSurface) {
-		printf("Failed to load image: %s\n", IMG_GetError());
+		//printf("Failed to load image: %s\n", IMG_GetError());
 	}
 	imageTexture = SDL_CreateTextureFromSurface(rendererGame, imageSurface);
 	if (!imageTexture) {
-		printf("Failed to create texture: %s\n", SDL_GetError());
+		//printf("Failed to create texture: %s\n", SDL_GetError());
 	}
 
 	randomFood();
@@ -68,28 +75,28 @@ void initBoard(HRAC* hrac) {
 	for (int i = 0; i < hrac->HADIK->dlzka; i++) {
 		gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
 	}
-
+	drawGameBoard();
 }
 
 void initGame(HRAC* hrac) {
 
 	// Initialize SDL_image
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
-		fprintf(stderr, "Failed to initialize SDL_image: %s\n", IMG_GetError());
+		//fprintf(stderr, "Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 
 	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-		fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
+		//fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 	}
 
 	windowGame = SDL_CreateWindow("Snake Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
 	if (windowGame == NULL) {
-		fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
+		//fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
 	}
 
 	rendererGame = SDL_CreateRenderer(windowGame, -1, SDL_RENDERER_ACCELERATED);
 	if (rendererGame == NULL) {
-		fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
+		//fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
 	}
 
 	initBoard(hrac);
@@ -102,7 +109,7 @@ void drawGameBoard() {
 		for (int j = 0; j < BOARD_SIZE_Y; ++j) {
 			SDL_Rect cellRect = { i * V_BUNKA, j * V_BUNKA, V_BUNKA, V_BUNKA };
 			SDL_SetRenderDrawColor(rendererGame, 0, 0, 0, 255);    // farba buniek
-
+			enum CellType previousCell = gameBoard[i][j];
 			switch (gameBoard[i][j]) {
 			case PRAZDNE:
 				SDL_SetRenderDrawColor(rendererGame, 144, 238, 144, 255);  // farba prazdnych buniek
@@ -170,8 +177,15 @@ void showMessageBox(const char* title, const char* message, char* buttonText, HR
 
 
 void updateSnakePosition(HRAC* hrac) {
+	SDL_Rect cellRect;
 	// Clear the tail position
 	gameBoard[hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1]][hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1]] = PRAZDNE;
+	cellRect.x = hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1] * V_BUNKA;
+	cellRect.y = hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1] * V_BUNKA;
+	cellRect.h = V_BUNKA;
+	cellRect.w = V_BUNKA;
+	SDL_SetRenderDrawColor(rendererGame, 144, 238, 144, 255);
+	SDL_RenderFillRect(rendererGame, &cellRect);
 
 	// Update the snake body positions
 	for (int i = hrac->HADIK->dlzka - 1; i > 0; i--) {
@@ -208,8 +222,13 @@ void updateSnakePosition(HRAC* hrac) {
 		//// Update the board with the new snake positions
 		for (int i = 0; i < hrac->HADIK->dlzka; i++) {
 			gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
+			SDL_SetRenderDrawColor(rendererGame, 0, 0, 0, 255);
+			cellRect.x = hrac->HADIK->snakeBodyX[i] * V_BUNKA;
+			cellRect.y = hrac->HADIK->snakeBodyY[i] * V_BUNKA;
+			SDL_RenderFillRect(rendererGame, &cellRect);
 		}
 	}
+	SDL_RenderPresent(rendererGame);
 }
 
 void gameLoop(HRAC* hrac) {
@@ -285,8 +304,8 @@ void gameLoop(HRAC* hrac) {
 		}
 		// Update snake position
 		updateSnakePosition(hrac);
-		drawGameBoard();
-		printf("Hrac: %s snakeX: %d, snakeY: %d\n", hrac->meno, hrac->HADIK->x, hrac->HADIK->y);
+		//drawGameBoard();
+		//printf("Hrac: %s snakeX: %d, snakeY: %d\n", hrac->meno, hrac->HADIK->x, hrac->HADIK->y);
 		SDL_Delay(FRAME_RATE);
 	}
 }
