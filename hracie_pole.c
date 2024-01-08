@@ -9,135 +9,163 @@
 #define FRAME_RATE 80
 #define MAX_SNAKE_SIZE 100
 
-SDL_Window* windowGame = NULL;
-SDL_Renderer* rendererGame = NULL;
+SDL_Window *windowGame = NULL;
+SDL_Renderer *rendererGame = NULL;
 
-SDL_Surface* apple_image_surface;
-SDL_Texture* apple_image_texture;
+SDL_Surface *apple_image_surface;
+SDL_Texture *apple_image_texture;
 
-SDL_Surface* grass_image_surface;
-SDL_Texture* grass_image_texture;
+SDL_Surface *grass_image_surface;
+SDL_Texture *grass_image_texture;
 
-SDL_Surface* snake_image_surface;
-SDL_Texture* snake_image_texture;
+SDL_Surface *snake_image_surface;
+SDL_Texture *snake_image_texture;
 
-SDL_Rect appleRect = { 0, 0, V_BUNKA, V_BUNKA };
+SDL_Rect appleRect = {0, 0, V_BUNKA, V_BUNKA};
 
 int quit = 0;
 
-void randomFood() {
+void randomFood(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y])
+{
 
-    int foodX = rand() % (BOARD_SIZE_X / V_BUNKA);
-    int foodY = rand() % (BOARD_SIZE_Y / V_BUNKA);
+	int foodX = rand() % (BOARD_SIZE_X / V_BUNKA);
+	int foodY = rand() % (BOARD_SIZE_Y / V_BUNKA);
 
-    while (gameBoard[foodX][foodY] == HAD) {
-        foodX = rand() % BOARD_SIZE_X;
-        foodY = rand() % BOARD_SIZE_Y;
-    }  
+	while ((*gameBoard)[foodX][foodY] == HAD)
+	{
+		foodX = rand() % BOARD_SIZE_X;
+		foodY = rand() % BOARD_SIZE_Y;
+	}
 
-    gameBoard[foodX][foodY] = JEDLO;
+	(*gameBoard)[foodX][foodY] = JEDLO;
 
-    appleRect.x = foodX * V_BUNKA;
-    appleRect.y = foodY * V_BUNKA;
-					  
-    if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0) {
-        fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
-    }
+	appleRect.x = foodX * V_BUNKA;
+	appleRect.y = foodY * V_BUNKA;
+
+	if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
+	{
+		fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+	}
 	SDL_RenderPresent(rendererGame);
 }
 
-void initSnake(HRAC* hrac){
-	hrac->HADIK->snakeBodyX[0] = hrac->HADIK->x; //fix
+void initSnake(HRAC *hrac, enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y])
+{
+	hrac->HADIK->snakeBodyX[0] = hrac->HADIK->x;
 	hrac->HADIK->snakeBodyY[0] = hrac->HADIK->y;
 
-	
-	for (int i = 0; i < hrac->HADIK->dlzka; i++) {
-		gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
+	for (int i = 0; i < hrac->HADIK->dlzka; i++)
+	{
+		(*gameBoard)[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
 	}
 }
 
-void initBoard() {
+void initBoard(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y])
+{
 
-	for (int i = 0; i < BOARD_SIZE_X; ++i) {
-		for (int j = 0; j < BOARD_SIZE_Y; ++j) {
-			gameBoard[i][j] = PRAZDNE;
+	for (int i = 0; i < BOARD_SIZE_X; ++i)
+	{
+		for (int j = 0; j < BOARD_SIZE_Y; ++j)
+		{
+			(*gameBoard)[i][j] = PRAZDNE;
 		}
 	}
 
 	apple_image_surface = IMG_Load("images/apple_small.png");
-	if (!apple_image_surface) {
+	if (!apple_image_surface)
+	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 	apple_image_texture = SDL_CreateTextureFromSurface(rendererGame, apple_image_surface);
-	if (!apple_image_texture) {
+	if (!apple_image_texture)
+	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 
 	grass_image_surface = IMG_Load("images/grass.png");
-	if (!grass_image_surface) {
+	if (!grass_image_surface)
+	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 	grass_image_texture = SDL_CreateTextureFromSurface(rendererGame, grass_image_surface);
-	if (!grass_image_texture) {
+	if (!grass_image_texture)
+	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 
 	snake_image_surface = IMG_Load("images/snake_pattern.jpg");
-	if (!snake_image_surface) {
+	if (!snake_image_surface)
+	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 	snake_image_texture = SDL_CreateTextureFromSurface(rendererGame, snake_image_surface);
-	if (!snake_image_texture) {
+	if (!snake_image_texture)
+	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 }
 
-void initGame() {
+void initGame(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y])
+{
 
-	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
+	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
+	{
 		fprintf(stderr, "Failed to initialize SDL_image: %s\n", IMG_GetError());
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 
-	if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+	if (SDL_Init(SDL_INIT_VIDEO) < 0)
+	{
 		fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 		SDL_Log("SDL could not initialize! SDL_Error: %s\n", IMG_GetError());
 	}
 
 	windowGame = SDL_CreateWindow("Snake Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
-	if (windowGame == NULL) {
+	if (windowGame == NULL)
+	{
 		fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
 		SDL_Log("Window could not be created! SDL_Error: %s\n", IMG_GetError());
 	}
 
 	rendererGame = SDL_CreateRenderer(windowGame, -1, SDL_RENDERER_ACCELERATED);
-	if (rendererGame == NULL) {
+	if (rendererGame == NULL)
+	{
 		fprintf(stderr, "Renderer could not be created! SDL_Error: %s\n", SDL_GetError());
 		SDL_Log("Renderer could not be created! SDL_Error: %s\n", IMG_GetError());
 	}
 
-	initBoard();
+	initBoard(gameBoard);
 }
 
-void drawGameBoard() {
+void drawGameBoard(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y])
+{
 	SDL_RenderClear(rendererGame);
-	for (int i = 0; i < BOARD_SIZE_X; ++i) {
-		for (int j = 0; j < BOARD_SIZE_Y; ++j) {
-			SDL_Rect cellRect = { i * V_BUNKA, j * V_BUNKA, V_BUNKA, V_BUNKA };
-			switch (gameBoard[i][j]) {
+	for (int i = 0; i < BOARD_SIZE_X; ++i)
+	{
+		for (int j = 0; j < BOARD_SIZE_Y; ++j)
+		{
+			SDL_Rect cellRect = {i * V_BUNKA, j * V_BUNKA, V_BUNKA, V_BUNKA};
+			switch ((*gameBoard)[i][j])
+			{
 			case PRAZDNE:
-				if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0) { 
-        			fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
-    			}
+				// SDL_Log("PRAZDNE: %d", (*gameBoard)[i][j]);
+				if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
+				{
+					fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+				}
 				break;
 			case HAD:
-				if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0) { 
-        			fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
-    			}
+				// SDL_Log("HAD: %d", (*gameBoard)[i][j]);
+				if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
+				{
+					fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+				}
 				break;
 			case JEDLO:
-				if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &cellRect) != 0) {
-				   fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+				// SDL_Log("JEDLO: %d", (*gameBoard)[i][j]);
+				if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &cellRect) != 0)
+				{
+					fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
 				}
 				break;
 			}
@@ -146,33 +174,40 @@ void drawGameBoard() {
 	SDL_RenderPresent(rendererGame);
 }
 
-void cleanupSDL() {
-	if (apple_image_surface) {
+void cleanupSDL()
+{
+	if (apple_image_surface)
+	{
 		SDL_FreeSurface(apple_image_surface);
 		apple_image_surface = NULL;
 	}
 
-	if (apple_image_texture) {
+	if (apple_image_texture)
+	{
 		SDL_DestroyTexture(apple_image_texture);
 		apple_image_texture = NULL;
 	}
 
-	if (grass_image_surface) {
+	if (grass_image_surface)
+	{
 		SDL_FreeSurface(grass_image_surface);
 		grass_image_surface = NULL;
 	}
 
-	if (grass_image_texture) {
+	if (grass_image_texture)
+	{
 		SDL_DestroyTexture(grass_image_texture);
 		grass_image_texture = NULL;
 	}
 
-	if (snake_image_surface) {
+	if (snake_image_surface)
+	{
 		SDL_FreeSurface(snake_image_surface);
 		snake_image_surface = NULL;
 	}
 
-	if (snake_image_texture) {
+	if (snake_image_texture)
+	{
 		SDL_DestroyTexture(snake_image_texture);
 		snake_image_texture = NULL;
 	}
@@ -181,18 +216,20 @@ void cleanupSDL() {
 	SDL_Quit();
 }
 
-void showMessage(const char* title, const char* message, SDL_MessageBoxFlags flags) {
-    SDL_ShowSimpleMessageBox(flags, title, message, NULL);
+void showMessage(const char *title, const char *message, SDL_MessageBoxFlags flags)
+{
+	SDL_ShowSimpleMessageBox(flags, title, message, NULL);
 }
 
-void showMessageBox(const char* title, const char* message, char* buttonText, HRAC* hrac) {
+void showMessageBox(const char *title, const char *message, char *buttonText, HRAC *hrac)
+{
 	const SDL_MessageBoxButtonData buttons[] = {
-		{ SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, buttonText },
+		{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, buttonText},
 	};
 
 	const SDL_MessageBoxData messageboxdata = {
 		SDL_MESSAGEBOX_INFORMATION,
-		windowGame,  // Parent window, may be NULL
+		windowGame, // Parent window, may be NULL
 		title,
 		message,
 		SDL_arraysize(buttons),
@@ -212,20 +249,22 @@ void showMessageBox(const char* title, const char* message, char* buttonText, HR
 	// }
 }
 
-
-void updateSnakePosition(HRAC* hrac) {
-	SDL_Rect cellRect = { 0, 0, V_BUNKA, V_BUNKA };
+void updateSnakePosition(HRAC *hrac, enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y])
+{
+	SDL_Rect cellRect = {0, 0, V_BUNKA, V_BUNKA};
 	// Clear the tail position
-	gameBoard[hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1]][hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1]] = PRAZDNE;
+	(*gameBoard)[hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1]][hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1]] = PRAZDNE;
 	cellRect.x = hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1] * V_BUNKA;
 	cellRect.y = hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1] * V_BUNKA;
 
-	if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0) { 
-        fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
-    }
+	if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
+	{
+		fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
+	}
 
 	// Update the snake body positions
-	for (int i = hrac->HADIK->dlzka - 1; i > 0; i--) {
+	for (int i = hrac->HADIK->dlzka - 1; i > 0; i--)
+	{
 		hrac->HADIK->snakeBodyX[i] = hrac->HADIK->snakeBodyX[i - 1];
 		hrac->HADIK->snakeBodyY[i] = hrac->HADIK->snakeBodyY[i - 1];
 	}
@@ -235,24 +274,28 @@ void updateSnakePosition(HRAC* hrac) {
 	int newSnakeY = hrac->HADIK->y + hrac->HADIK->snakeDirectionY;
 
 	// Check for collision with the walls
-	if (newSnakeX < 0 || newSnakeX >= (BOARD_SIZE_X / V_BUNKA) || newSnakeY < 0 || newSnakeY >= (BOARD_SIZE_Y / V_BUNKA)) {
+	if (newSnakeX < 0 || newSnakeX >= (BOARD_SIZE_X / V_BUNKA) || newSnakeY < 0 || newSnakeY >= (BOARD_SIZE_Y / V_BUNKA))
+	{
 		hrac->HADIK->snakeDirectionX = 0;
 		hrac->HADIK->snakeDirectionY = 0;
 		SDL_Log("Prehral si! Nabural si do steny");
-		// showMessageBox("Game Over", "Prehral si! Nabural si do steny", "Spat do menu", hrac);
-		showMessage("Simple Message Box", "Hello from SDL!", SDL_MESSAGEBOX_INFORMATION);
+		showMessageBox("Game Over", "Prehral si! Nabural si do steny", "Spat do menu", hrac);
+		// showMessage("Simple Message Box", "Hello from SDL!", SDL_MESSAGEBOX_INFORMATION);
 	}
-	else {
+	else
+	{
 		// Check for collision with food
-		if (gameBoard[newSnakeX][newSnakeY] == JEDLO) {
+		if ((*gameBoard)[newSnakeX][newSnakeY] == JEDLO)
+		{
 			hrac->HADIK->dlzka++;
-			randomFood();
+			randomFood(gameBoard);
 		}
 
-		if (gameBoard[newSnakeX][newSnakeY] == HAD) {
+		if ((*gameBoard)[newSnakeX][newSnakeY] == HAD)
+		{
 			SDL_Log("Prehral si! Zjedol si hada");
-			// showMessageBox("Game Over", "Prehral si! Zjedol si hada", "Spat do menu", hrac);
-			showMessage("Simple Message Box", "Hello from SDL!", SDL_MESSAGEBOX_INFORMATION);
+			showMessageBox("Game Over", "Prehral si! Zjedol si hada", "Spat do menu", hrac);
+			// showMessage("Simple Message Box", "Hello from SDL!", SDL_MESSAGEBOX_INFORMATION);
 		}
 		//// Update the head position
 		hrac->HADIK->x = newSnakeX;
@@ -261,11 +304,13 @@ void updateSnakePosition(HRAC* hrac) {
 		hrac->HADIK->snakeBodyY[0] = hrac->HADIK->y;
 
 		//// Update the board with the new snake positions
-		for (int i = 0; i < hrac->HADIK->dlzka; i++) {
-			gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
+		for (int i = 0; i < hrac->HADIK->dlzka; i++)
+		{
+			(*gameBoard)[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
 			cellRect.x = hrac->HADIK->snakeBodyX[i] * V_BUNKA;
 			cellRect.y = hrac->HADIK->snakeBodyY[i] * V_BUNKA;
-			if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0) { 
+			if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
+			{
 				fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
 			}
 		}
@@ -273,29 +318,35 @@ void updateSnakePosition(HRAC* hrac) {
 	SDL_RenderPresent(rendererGame);
 }
 
-void gameLoop(HRAC* hrac, SDL_Event *event) {
-	while (!quit) {
+void gameLoop(HRAC *hrac, SDL_Event *event, enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]){
+	while (!quit)
+	{
 		// Handle events
-		while (SDL_PollEvent(event)) {
-			switch (event->type) {
+		while (SDL_PollEvent(event))
+		{
+			switch (event->type)
+			{
 			case SDL_QUIT:
 				quit = 1;
 				break;
 			case SDL_KEYDOWN:
-				if (event->key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) ||
-					event->key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL)) {
+				if (((event->key.keysym.sym == SDLK_q) && (SDL_GetModState() & KMOD_CTRL)) ||
+					((event->key.keysym.sym == SDLK_c) && (SDL_GetModState() & KMOD_CTRL)))
+				{
 					// ctrl + q alebo ctrl + c, pre zrusenie hry
-					quit = 1;  //ToDo, toto hadze read access error
+					quit = 1; // ToDo, toto hadze read access error
 
 					cleanupSDL(hrac);
 					// initMenu();
 					// menuLoop(hrac);
 				}
-				else {
+				else
+				{
 					// Handle arrow key events to change the snake's direction
-					switch (event->key.keysym.sym) {
+					switch (event->key.keysym.sym)
+					{
 					case SDLK_UP:
-						if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) //ak nejde dole, moze ist hore
+						if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 						{
 							hrac->HADIK->snakeDirectionX = 0;
 							hrac->HADIK->snakeDirectionY = -1;
@@ -350,8 +401,9 @@ void gameLoop(HRAC* hrac, SDL_Event *event) {
 		}
 		if (!quit)
 		{
-			updateSnakePosition(hrac);
-			SDL_Delay(FRAME_RATE);	
+			updateSnakePosition(hrac, gameBoard);
+			//printf("snakeX: %d, snakeY: %d\n", hrac->HADIK->x, hrac->HADIK->y);
+			SDL_Delay(FRAME_RATE);
 		}
 	}
 }

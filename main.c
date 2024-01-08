@@ -1,76 +1,68 @@
 ﻿#include <stdio.h>
 #include <SDL.h>
 #include <pthread.h>
-// #include "menu.h"
 #include "hracie_pole.h"
-
 #include "hrac.h"
 
-struct arguments{
-	HRAC* hrac;
-	SDL_Event* event;
-};
+// pthread_mutex_t boardMutex = PTHREAD_MUTEX_INITIALIZER;
+// enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];
 
-// Otazky:
-// je architektura ok?
-// sú premenné izolované vo svojich vláknach? Ako to funguje?
-// client/server?
-// SDL showMessageBox nefunguje na Linux?
+// struct arguments
+// {
+// 	HRAC *hrac;
+// 	SDL_Event *event;
+// 	void (*loopFunction)(HRAC *, SDL_Event *, enum CellType (*)[BOARD_SIZE_X][BOARD_SIZE_Y]);
+// };
 
-void* playerThread(void* arg) {
+// void *playerFunc(void *arg){
+//     pthread_mutex_lock(&boardMutex);
+// 	struct arguments *localArgs = (struct arguments *)arg;
+// 	localArgs->loopFunction(localArgs->hrac, localArgs->event, &gameBoard);
+//     pthread_mutex_unlock(&boardMutex);
+// 	return NULL;
+// }
 
-	struct arguments* localArgs = (struct arguments*)arg;
-	gameLoop(localArgs->hrac, localArgs->event);
-	// cleanupSDL();
-	return NULL;
-}
+// void *renderFunction(void *arg){
+// 	struct arguments *localArgs = (struct arguments *)arg;
+// 	// pthread_mutex_lock(&boardMutex);
+// 	updateSnakePosition(localArgs->hrac, &gameBoard);
+//     // pthread_mutex_unlock(&boardMutex);
+// 	return NULL;
+// }
 
-int main() {
-	pthread_t thread1, thread2; // You can extend this for more players
-
-	HRAC* hrac1 = vytvorHraca("Kade", 1);
+int main()
+{
+	pthread_t vykreslovacieVlakno, hracskeVlakno1;
+ 	// pthread_mutex_init(&boardMutex, NULL);
+	SDL_Event event1;
+	HRAC *hrac1 = vytvorHraca("Kade", 1);
 	hrac1->HADIK->x = 1;
 	hrac1->HADIK->y = 1;
 	hrac1->HADIK->snakeDirectionX = 1; // Initial direction (right)
 	hrac1->HADIK->snakeDirectionY = 0;
-    
-	// HRAC* hrac2 = vytvorHraca("Marek", 1);
-	// hrac2->HADIK->x = 1;
-	// hrac2->HADIK->y = 3;
-	// hrac2->HADIK->snakeDirectionX = 1;
-	// hrac2->HADIK->snakeDirectionY = 0;
-	
 
-	SDL_Event event1;
-	struct arguments* hrac1Args = malloc(sizeof(struct arguments));
-	hrac1Args->event = &event1;
-	hrac1Args->hrac = hrac1;
 
-	// SDL_Event event2;
-	// struct arguments* hrac2Args = malloc(sizeof(struct arguments));
-	// hrac2Args->event = &event2;
-	// hrac2Args->hrac = hrac2;
+	// struct arguments* hrac1Args = malloc(sizeof(struct arguments));
+	// hrac1Args->event = &event1;
+	// hrac1Args->hrac = hrac1;
+	// hrac1Args->loopFunction = gameLoop;
 
-	initGame();
-	initSnake(hrac1);
-	// initSnake(hrac2);
-	randomFood();
-	drawGameBoard();
-	pthread_create(&thread1, NULL, playerThread, hrac1Args);
-	// gameLoop(hrac2);
-	// pthread_create(&thread2, NULL, playerThread, hrac2Args);
+	// SDL_Event event1;
+	// struct arguments *renderArgs = malloc(sizeof(struct arguments));
+    // renderArgs->event = &event1;
+    // renderArgs->hrac = hrac1;
 
-	pthread_join(thread1, NULL);
-	pthread_join(thread2, NULL);
+	initGame(&gameBoard);
+	initSnake(hrac1, &gameBoard);
+	randomFood(&gameBoard);
+	drawGameBoard(&gameBoard);
 
-	while (1)
-	{
-		/* code */
-	}
-	// initMenu();
+	gameLoop(hrac1, &event1, &gameBoard);
+	// pthread_create(&hracskeVlakno1, NULL, playerFunc, hrac1Args);
+	// pthread_create(&vykreslovacieVlakno, NULL, renderFunction, renderArgs);
 
-	// menuLoop(hrac1);
-	// cleanUpMenu();
+	// pthread_join(hracskeVlakno1, NULL);
+	// pthread_join(vykreslovacieVlakno, NULL);
 
 	return 0;
 }

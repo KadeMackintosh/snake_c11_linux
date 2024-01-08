@@ -20,8 +20,8 @@ static enum CellType {
 // };
 
 
-void initGame();
-void gameLoop(HRAC* hrac, SDL_Event *event);
+void initGame(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
+void gameLoop(HRAC* hrac, SDL_Event *event, enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
 
 static enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];
 
