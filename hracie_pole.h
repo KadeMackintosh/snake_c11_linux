@@ -12,8 +12,16 @@ static enum CellType {
     JEDLO
 };
 
-void initGame(HRAC* hrac);
-void gameLoop(HRAC* hrac);
+// static enum Movement {
+//     UP = {},
+//     DOWN,
+//     LEFT,
+//     RIGHT
+// };
+
+
+void initGame();
+void gameLoop(HRAC* hrac, SDL_Event *event);
 
 static enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];
 

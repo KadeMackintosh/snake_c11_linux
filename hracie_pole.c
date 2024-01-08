@@ -3,7 +3,7 @@
 #include <SDL_image.h>
 #include "hracie_pole.h"
 #include "hrac.h"
-#include "menu.h"
+// #include "menu.h"
 
 #define V_BUNKA 10
 #define FRAME_RATE 80
@@ -46,10 +46,17 @@ void randomFood() {
 	SDL_RenderPresent(rendererGame);
 }
 
-void initBoard(HRAC* hrac) {
-
+void initSnake(HRAC* hrac){
 	hrac->HADIK->snakeBodyX[0] = hrac->HADIK->x; //fix
 	hrac->HADIK->snakeBodyY[0] = hrac->HADIK->y;
+
+	
+	for (int i = 0; i < hrac->HADIK->dlzka; i++) {
+		gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
+	}
+}
+
+void initBoard() {
 
 	for (int i = 0; i < BOARD_SIZE_X; ++i) {
 		for (int j = 0; j < BOARD_SIZE_Y; ++j) {
@@ -83,16 +90,9 @@ void initBoard(HRAC* hrac) {
 	if (!snake_image_texture) {
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
-
-	for (int i = 0; i < hrac->HADIK->dlzka; i++) {
-		gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
-	}
-
-	randomFood();
-	drawGameBoard();
 }
 
-void initGame(HRAC* hrac) {
+void initGame() {
 
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG) {
 		fprintf(stderr, "Failed to initialize SDL_image: %s\n", IMG_GetError());
@@ -116,7 +116,7 @@ void initGame(HRAC* hrac) {
 		SDL_Log("Renderer could not be created! SDL_Error: %s\n", IMG_GetError());
 	}
 
-	initBoard(hrac);
+	initBoard();
 }
 
 void drawGameBoard() {
@@ -204,12 +204,12 @@ void showMessageBox(const char* title, const char* message, char* buttonText, HR
 	SDL_ShowMessageBox(&messageboxdata, &buttonid);
 
 	// Handle button press if needed
-	if (buttonid == -1 || buttonid == 0) {
-		quit = 1;
-		cleanupSDL(hrac);
-		initMenu();
-		menuLoop(hrac);
-	}
+	// if (buttonid == -1 || buttonid == 0) {
+	// 	quit = 1;
+	// 	cleanupSDL(hrac);
+	// 	initMenu();
+	// 	menuLoop(hrac);
+	// }
 }
 
 
@@ -245,12 +245,6 @@ void updateSnakePosition(HRAC* hrac) {
 	else {
 		// Check for collision with food
 		if (gameBoard[newSnakeX][newSnakeY] == JEDLO) {
-			// cellRect.x = newSnakeX * V_BUNKA;
-			// cellRect.y = newSnakeY * V_BUNKA;
-			// if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0) { 
-			// 	fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
-			// }
-			// SDL_RenderPresent(rendererGame);
 			hrac->HADIK->dlzka++;
 			randomFood();
 		}
@@ -279,28 +273,27 @@ void updateSnakePosition(HRAC* hrac) {
 	SDL_RenderPresent(rendererGame);
 }
 
-void gameLoop(HRAC* hrac) {
-	SDL_Event event;
+void gameLoop(HRAC* hrac, SDL_Event *event) {
 	while (!quit) {
 		// Handle events
-		while (SDL_PollEvent(&event)) {
-			switch (event.type) {
+		while (SDL_PollEvent(event)) {
+			switch (event->type) {
 			case SDL_QUIT:
 				quit = 1;
 				break;
 			case SDL_KEYDOWN:
-				if (event.key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) ||
-					event.key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL)) {
+				if (event->key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) ||
+					event->key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL)) {
 					// ctrl + q alebo ctrl + c, pre zrusenie hry
 					quit = 1;  //ToDo, toto hadze read access error
 
 					cleanupSDL(hrac);
-					initMenu();
-					menuLoop(hrac);
+					// initMenu();
+					// menuLoop(hrac);
 				}
 				else {
 					// Handle arrow key events to change the snake's direction
-					switch (event.key.keysym.sym) {
+					switch (event->key.keysym.sym) {
 					case SDLK_UP:
 						if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) //ak nejde dole, moze ist hore
 						{
