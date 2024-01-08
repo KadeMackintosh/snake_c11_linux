@@ -12,7 +12,7 @@ int main() {
 	hrac1->HADIK->y = 1;
 	hrac1->HADIK->snakeDirectionX = 1; // Initial direction (right)
 	hrac1->HADIK->snakeDirectionY = 0;
-
+    
 	/*HRAC* hrac2 = vytvorHraca("Cundo", 1);
 	hrac2->HADIK->x = 700;
 	hrac2->HADIK->y = 700;
@@ -22,7 +22,6 @@ int main() {
 	initMenu();
 	menuLoop(hrac1);
 	cleanUpMenu();
-
 
 	return 0;
 }
