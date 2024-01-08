@@ -23,8 +23,5 @@ int main() {
 	menuLoop(hrac1);
 	cleanUpMenu();
 
-
-
-
 	return 0;
 }

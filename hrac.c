@@ -8,6 +8,7 @@
 HRAC* vytvorHraca(const char* meno, int dlzka) {
     HRAC* novyHrac = malloc(sizeof(HRAC));
     if (novyHrac == NULL) {
+        
         //fprintf(stderr, "Chyba pri vytvarani hraca");
         return NULL;
     }
