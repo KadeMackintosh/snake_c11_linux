@@ -6,21 +6,16 @@
 #define BOARD_SIZE_X 800
 #define BOARD_SIZE_Y 800
 
-static enum CellType {
+enum CellType {
     PRAZDNE,
     HAD,
     JEDLO
 };
 
-// static enum Movement {
-//     UP = {},
-//     DOWN,
-//     LEFT,
-//     RIGHT
-// };
-
-
 void initGame(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
+void initSnake(HRAC *hrac, enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
+void randomFood(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
+void drawGameBoard(enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
 void gameLoop(HRAC* hrac, SDL_Event *event, enum CellType (*gameBoard)[BOARD_SIZE_X][BOARD_SIZE_Y]);
 
 static enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];

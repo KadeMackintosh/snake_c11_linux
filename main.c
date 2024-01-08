@@ -4,6 +4,13 @@
 #include "hracie_pole.h"
 #include "hrac.h"
 
+#include <SFML/Network.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 12345
+
+
 // pthread_mutex_t boardMutex = PTHREAD_MUTEX_INITIALIZER;
 // enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];
 
@@ -32,7 +39,46 @@
 
 int main()
 {
-	pthread_t vykreslovacieVlakno, hracskeVlakno1;
+
+	//    // Create a TCP socket
+    // sfTcpListener* listener = sfTcpListener_create();
+
+    // // Bind the listener to a port
+    // if (sfTcpListener_listen(listener, PORT, sfIpAddress_Any) != sfSocketDone) {
+    //     // Handle error
+    //     fprintf(stderr, "Error listening on port %d\n", PORT);
+    //     return 1;
+    // }
+
+    // printf("Server is listening...\n");
+
+    // // Accept a new connection
+    // sfTcpSocket* client;
+    // sfSocketStatus status = sfTcpListener_accept(listener, &client);
+
+    // if (status != sfSocketDone) {
+    //     // Handle error
+    //     fprintf(stderr, "Error accepting connection\n");
+    //     return 1;
+    // }
+
+    // // Send a message to the client
+    // const char* message = "Hello, client!";
+    // sfTcpSocket_send(client, message, strlen(message) + 1);
+
+    // // Receive a message from the client
+    // char buffer[100];
+    // size_t received;
+    // sfTcpSocket_receive(client, buffer, sizeof(buffer), &received);
+    // printf("Received from client: %s\n", buffer);
+
+    // // Close the client socket
+    // sfTcpSocket_destroy(client);
+
+    // // Close the listener socket
+    // sfTcpListener_destroy(listener);
+	//-------------------------------------
+	// pthread_t vykreslovacieVlakno, hracskeVlakno1;
  	// pthread_mutex_init(&boardMutex, NULL);
 	SDL_Event event1;
 	HRAC *hrac1 = vytvorHraca("Kade", 1);
