@@ -156,6 +156,26 @@ void cleanupSDL() {
 		SDL_DestroyTexture(apple_image_texture);
 		apple_image_texture = NULL;
 	}
+
+	if (grass_image_surface) {
+		SDL_FreeSurface(grass_image_surface);
+		grass_image_surface = NULL;
+	}
+
+	if (grass_image_texture) {
+		SDL_DestroyTexture(grass_image_texture);
+		grass_image_texture = NULL;
+	}
+
+	if (snake_image_surface) {
+		SDL_FreeSurface(snake_image_surface);
+		snake_image_surface = NULL;
+	}
+
+	if (snake_image_texture) {
+		SDL_DestroyTexture(snake_image_texture);
+		snake_image_texture = NULL;
+	}
 	SDL_DestroyRenderer(rendererGame);
 	SDL_DestroyWindow(windowGame);
 	SDL_Quit();
@@ -201,7 +221,7 @@ void updateSnakePosition(HRAC* hrac) {
 	cellRect.y = hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1] * V_BUNKA;
 
 	if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0) { 
-        fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+        fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
     }
 
 	// Update the snake body positions
@@ -252,7 +272,7 @@ void updateSnakePosition(HRAC* hrac) {
 			cellRect.x = hrac->HADIK->snakeBodyX[i] * V_BUNKA;
 			cellRect.y = hrac->HADIK->snakeBodyY[i] * V_BUNKA;
 			if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0) { 
-				fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+				fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
 			}
 		}
 	}
@@ -273,6 +293,7 @@ void gameLoop(HRAC* hrac) {
 					event.key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL)) {
 					// ctrl + q alebo ctrl + c, pre zrusenie hry
 					quit = 1;  //ToDo, toto hadze read access error
+
 					cleanupSDL(hrac);
 					initMenu();
 					menuLoop(hrac);
@@ -334,7 +355,10 @@ void gameLoop(HRAC* hrac) {
 				break;
 			}
 		}
-		updateSnakePosition(hrac);
-		SDL_Delay(FRAME_RATE);
+		if (!quit)
+		{
+			updateSnakePosition(hrac);
+			SDL_Delay(FRAME_RATE);	
+		}
 	}
 }

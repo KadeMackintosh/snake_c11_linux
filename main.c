@@ -4,8 +4,17 @@
 #include "menu.h"
 #include "hrac.h"
 
+// void* playerThread(void* arg) {
+// 	HRAC* hrac = (HRAC*)arg;
+// 	initSnake(hrac);
+// 	gameLoop(hrac);
+// 	cleanUpMenu();
+// 	return NULL;
+// //	pthread_exit(NULL);
+// }
+
 int main() {
-	//pthread_t thread1, thread/*2*/, drawBoardThread; // You can extend this for more players
+	pthread_t thread1, thread; // You can extend this for more players
 
 	HRAC* hrac1 = vytvorHraca("Kade", 1);
 	hrac1->HADIK->x = 1;
