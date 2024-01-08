@@ -21,7 +21,7 @@ static enum CellType {
 
 
 void initGame();
-void gameLoop(HRAC* hrac, SDL_Event *event);
+void gameLoop(HRAC* hrac, SDL_Event *event, int* x, int*y, enum CellType * cellPick);
 
 static enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];
 
