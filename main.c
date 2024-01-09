@@ -40,22 +40,7 @@ void *playerThreadFunc(void *arg)
 
 void *vykreslovacieVlaknoFunc(void *arg)
 {
-	// while (1)
-	// {
-	// 	// pthread_mutex_lock(&mutex2);
-    //     renderCell(hrac1);
-	// 	//renderCell(hrac2);
-    //     // pthread_mutex_unlock(&mutex2);
-	// 	SDL_Delay(80);	
-	// }
 	renderCell(hrac1);
-	while (1)
-	{
-		renderCell(hrac1);
-		
-		//SDL_Delay(80);
-	}
-	
 	return NULL;
 }
 
@@ -71,12 +56,16 @@ int main()
 	hrac1->HADIK->y = 1;
 	hrac1->HADIK->snakeDirectionX = 1; // Initial direction (right)
 	hrac1->HADIK->snakeDirectionY = 0;
+	hrac1->HADIK->previousTailX = 0;
+	hrac1->HADIK->previousTailY = 0;
 
 	hrac2 = vytvorHraca("Marek", 5);
 	hrac2->HADIK->x = 1;
 	hrac2->HADIK->y = 3;
 	hrac2->HADIK->snakeDirectionX = 1;
 	hrac2->HADIK->snakeDirectionY = 0;
+	hrac2->HADIK->previousTailX = 0;
+	hrac2->HADIK->previousTailY = 0;
 
 	SDL_Event event1;
 	struct arguments *hrac1Args = malloc(sizeof(struct arguments));
@@ -94,31 +83,25 @@ int main()
 
 	initGame();
 	initSnake(hrac1);
-	// initSnake(hrac2);
-	//randomFood();
+	//initSnake(hrac2);
+	randomFood();
 	drawGameBoard();
 	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, hrac1Args);
-	pthread_create(&vlaknoHrac2, NULL, playerThreadFunc, hrac2Args);
-	//pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
+	//pthread_create(&vlaknoHrac2, NULL, playerThreadFunc, hrac2Args);
+	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
 	// gameLoop(hrac2);
-	// pthread_create(&thread2, NULL, playerThread, hrac2Args);
 	// initMenu();
-
+	
 	// menuLoop(hrac1);
 	// cleanUpMenu();
+
+	pthread_join(vlaknoHrac1, NULL);
+	pthread_join(vykreslovacieVlakno, NULL);
+
 	while (1)
 	{
-		// pthread_mutex_lock(&mutex2);
-        renderCell(hrac1);
-		renderCell(hrac2);
-		//renderCell(hrac2);
-        // pthread_mutex_unlock(&mutex2);
-		//SDL_Delay(80);	
+		
 	}
-
-	//pthread_join(vlaknoHrac1, NULL);
-
-	//pthread_join(vykreslovacieVlakno, NULL);
 	//pthread_mutex_destroy(&mutex);
 
 	return 0;

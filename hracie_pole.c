@@ -245,58 +245,39 @@ void showMessageBox(const char *title, const char *message, char *buttonText, HR
 void renderCell(HRAC *hrac)
 {
 	SDL_Rect cellRect = {0, 0, V_BUNKA, V_BUNKA};
-	// while (!quit)
-	// {
-	// cellRect.x = hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1] * V_BUNKA;
-	// cellRect.y = hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1] * V_BUNKA;
-	// if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
-	// { // vymaze chvost
-	// 	fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
-	// }
-
-	// SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1] * V_BUNKA, hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1] * V_BUNKA);
-	// for (int i = 0; i < hrac->HADIK->dlzka; i++)
-	// {
-	// 	cellRect.x = hrac->HADIK->snakeBodyX[i] * V_BUNKA;
-	// 	cellRect.y = hrac->HADIK->snakeBodyY[i] * V_BUNKA;
-	// 	if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
-	// 	{
-	// 		fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
-	// 	}
-	// 	SDL_Log("hlava na pridanie x: %d, y: %d", hrac->HADIK->snakeBodyX[i] * V_BUNKA, hrac->HADIK->snakeBodyY[i] * V_BUNKA);
-
-	// }
-
-	// if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
-	// {
-	// 	fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
-	// }
-	// SDL_RenderPresent(rendererGame);
-	// SDL_Delay(FRAME_RATE);
-	// }
-	for (int i = 0; i < hrac->HADIK->dlzka; i++)
+	while (!quit)
 	{
-		cellRect.x = hrac->HADIK->snakeBodyX[i] * V_BUNKA;
-		cellRect.y = hrac->HADIK->snakeBodyY[i] * V_BUNKA;
+		cellRect.x = hrac->HADIK->x * V_BUNKA;
+		cellRect.y = hrac->HADIK->y * V_BUNKA;
 		if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
 		{
 			fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
 		}
-		// SDL_Log("hlava na pridanie x: %d, y: %d", hrac->HADIK->snakeBodyX[i] * V_BUNKA, hrac->HADIK->snakeBodyY[i] * V_BUNKA);
-		cellRect.x = hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1] * V_BUNKA;
-		cellRect.y = hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1] * V_BUNKA;
+		if (hrac->HADIK->snakeDirectionX == 1)
+		{
+		}
+		cellRect.x = hrac->HADIK->previousTailX * V_BUNKA;
+		cellRect.y = hrac->HADIK->previousTailY * V_BUNKA;
+		SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->previousTailX, hrac->HADIK->previousTailY);
 		if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
 		{
 			fprintf(stderr, "Failed to render grass image: %s\n", SDL_GetError());
 		}
-		// SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka] * V_BUNKA, hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka] * V_BUNKA);
+		if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
+		{
+			fprintf(stderr, "Failed to render apple image: %s\n", SDL_GetError());
+		}
+		SDL_RenderPresent(rendererGame);
+		
 	}
-	SDL_RenderPresent(rendererGame);
 }
 
 void updateSnakePosition(HRAC *hrac)
 {
 	gameBoard[hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1]][hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1]] = PRAZDNE;
+	hrac->HADIK->previousTailX = hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1];
+	hrac->HADIK->previousTailY = hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1];
+
 	for (int i = hrac->HADIK->dlzka - 1; i > 0; i--)
 	{
 		hrac->HADIK->snakeBodyX[i] = hrac->HADIK->snakeBodyX[i - 1];
@@ -423,8 +404,8 @@ void gameLoop(HRAC *hrac, SDL_Event *event, SDL_bool arrow_control)
 							}
 							break;
 						}
-					} 
-					else 
+					}
+					else
 					{
 						switch (event->key.keysym.sym)
 						{
@@ -485,11 +466,10 @@ void gameLoop(HRAC *hrac, SDL_Event *event, SDL_bool arrow_control)
 				break;
 			}
 		}
-		// SDL_Log("x> %d  y> %d %d>", *x, *y, *cellPick);
 		if (!quit)
 		{
 			updateSnakePosition(hrac);
-			SDL_Delay(FRAME_RATE);
+			SDL_Delay(80);
 		}
 	}
 }

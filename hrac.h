@@ -20,6 +20,8 @@ typedef struct hrac {
         int* snakeBodyY;
         int snakeDirectionX;
         int snakeDirectionY;
+        int previousTailX;
+        int previousTailY;
     } *HADIK;
 } HRAC;
 
