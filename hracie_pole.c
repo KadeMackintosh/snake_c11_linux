@@ -245,31 +245,27 @@ void showMessageBox(const char *title, const char *message, char *buttonText, HR
 void renderCell(HRAC *hrac)
 {
 	SDL_Rect cellRect = {0, 0, V_BUNKA, V_BUNKA};
-	while (!quit)
+	cellRect.x = hrac->HADIK->x * V_BUNKA;
+	cellRect.y = hrac->HADIK->y * V_BUNKA;
+	if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
 	{
-		cellRect.x = hrac->HADIK->x * V_BUNKA;
-		cellRect.y = hrac->HADIK->y * V_BUNKA;
-		if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
-		{
-			fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
-		}
-		if (hrac->HADIK->snakeDirectionX == 1)
-		{
-		}
-		cellRect.x = hrac->HADIK->previousTailX * V_BUNKA;
-		cellRect.y = hrac->HADIK->previousTailY * V_BUNKA;
-		SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->previousTailX, hrac->HADIK->previousTailY);
-		if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
-		{
-			fprintf(stderr, "Failed to render grass image: %s\n", SDL_GetError());
-		}
-		if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
-		{
-			fprintf(stderr, "Failed to render apple image: %s\n", SDL_GetError());
-		}
-		SDL_RenderPresent(rendererGame);
-		
+		fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
 	}
+	if (hrac->HADIK->snakeDirectionX == 1)
+	{
+	}
+	cellRect.x = hrac->HADIK->previousTailX * V_BUNKA;
+	cellRect.y = hrac->HADIK->previousTailY * V_BUNKA;
+	SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->previousTailX, hrac->HADIK->previousTailY);
+	if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
+	{
+		fprintf(stderr, "Failed to render grass image: %s\n", SDL_GetError());
+	}
+	if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
+	{
+		fprintf(stderr, "Failed to render apple image: %s\n", SDL_GetError());
+	}
+	SDL_RenderPresent(rendererGame);
 }
 
 void updateSnakePosition(HRAC *hrac)
@@ -325,7 +321,7 @@ void updateSnakePosition(HRAC *hrac)
 	}
 }
 
-void gameLoop(HRAC *hrac, SDL_Event *event, SDL_bool arrow_control)
+void gameLoop(HRAC *hrac1, HRAC *hrac2, SDL_Event *event)
 {
 	while (!quit)
 	{
@@ -344,121 +340,113 @@ void gameLoop(HRAC *hrac, SDL_Event *event, SDL_bool arrow_control)
 					// ctrl + q alebo ctrl + c, pre zrusenie hry
 					quit = 1; // ToDo, toto hadze read access error
 
-					cleanupSDL(hrac);
+					cleanupSDL(hrac1);
+					cleanupSDL(hrac2);
 					// initMenu();
 					// menuLoop(hrac);
 				}
 				else
 				{
-					if (arrow_control)
+					switch (event->key.keysym.sym)
 					{
-						switch (event->key.keysym.sym)
+					case SDLK_UP:
+						if (hrac1->HADIK->snakeDirectionY != 1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 						{
-						case SDLK_UP:
-							if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
-							{
-								hrac->HADIK->snakeDirectionX = 0;
-								hrac->HADIK->snakeDirectionY = -1;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-
-							break;
-						case SDLK_DOWN:
-							if (hrac->HADIK->snakeDirectionY != -1 || hrac->HADIK->dlzka == 1)
-							{
-								hrac->HADIK->snakeDirectionX = 0;
-								hrac->HADIK->snakeDirectionY = 1;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-							break;
-						case SDLK_LEFT:
-							if (hrac->HADIK->snakeDirectionX != 1 || hrac->HADIK->dlzka == 1)
-							{
-								hrac->HADIK->snakeDirectionX = -1;
-								hrac->HADIK->snakeDirectionY = 0;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-							break;
-						case SDLK_RIGHT:
-							if (hrac->HADIK->snakeDirectionX != -1 || hrac->HADIK->dlzka == 1)
-							{
-								hrac->HADIK->snakeDirectionX = 1;
-								hrac->HADIK->snakeDirectionY = 0;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-							break;
+							hrac1->HADIK->snakeDirectionX = 0;
+							hrac1->HADIK->snakeDirectionY = -1;
 						}
-					}
-					else
-					{
-						switch (event->key.keysym.sym)
+						else
 						{
-						case SDLK_w:
-							if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
-							{
-								hrac->HADIK->snakeDirectionX = 0;
-								hrac->HADIK->snakeDirectionY = -1;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-
-							break;
-						case SDLK_s:
-							if (hrac->HADIK->snakeDirectionY != -1 || hrac->HADIK->dlzka == 1)
-							{
-								hrac->HADIK->snakeDirectionX = 0;
-								hrac->HADIK->snakeDirectionY = 1;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-							break;
-						case SDLK_a:
-							if (hrac->HADIK->snakeDirectionX != 1 || hrac->HADIK->dlzka == 1)
-							{
-								hrac->HADIK->snakeDirectionX = -1;
-								hrac->HADIK->snakeDirectionY = 0;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-							break;
-						case SDLK_d:
-							if (hrac->HADIK->snakeDirectionX != -1 || hrac->HADIK->dlzka == 1)
-							{
-								hrac->HADIK->snakeDirectionX = 1;
-								hrac->HADIK->snakeDirectionY = 0;
-							}
-							else
-							{
-								SDL_Log("Illegal move!");
-								// printf("Illegal move!");
-							}
-							break;
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
 						}
+
+						break;
+					case SDLK_DOWN:
+						if (hrac1->HADIK->snakeDirectionY != -1 || hrac1->HADIK->dlzka == 1)
+						{
+							hrac1->HADIK->snakeDirectionX = 0;
+							hrac1->HADIK->snakeDirectionY = 1;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+						break;
+					case SDLK_LEFT:
+						if (hrac1->HADIK->snakeDirectionX != 1 || hrac1->HADIK->dlzka == 1)
+						{
+							hrac1->HADIK->snakeDirectionX = -1;
+							hrac1->HADIK->snakeDirectionY = 0;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+						break;
+					case SDLK_RIGHT:
+						if (hrac1->HADIK->snakeDirectionX != -1 || hrac1->HADIK->dlzka == 1)
+						{
+							hrac1->HADIK->snakeDirectionX = 1;
+							hrac1->HADIK->snakeDirectionY = 0;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+						break;
+					case SDLK_w:
+						if (hrac2->HADIK->snakeDirectionY != 1 || hrac2->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
+						{
+							hrac2->HADIK->snakeDirectionX = 0;
+							hrac2->HADIK->snakeDirectionY = -1;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+
+						break;
+					case SDLK_s:
+						if (hrac2->HADIK->snakeDirectionY != -1 || hrac2->HADIK->dlzka == 1)
+						{
+							hrac2->HADIK->snakeDirectionX = 0;
+							hrac2->HADIK->snakeDirectionY = 1;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+						break;
+					case SDLK_a:
+						if (hrac2->HADIK->snakeDirectionX != 1 || hrac2->HADIK->dlzka == 1)
+						{
+							hrac2->HADIK->snakeDirectionX = -1;
+							hrac2->HADIK->snakeDirectionY = 0;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+						break;
+					case SDLK_d:
+						if (hrac2->HADIK->snakeDirectionX != -1 || hrac2->HADIK->dlzka == 1)
+						{
+							hrac2->HADIK->snakeDirectionX = 1;
+							hrac2->HADIK->snakeDirectionY = 0;
+						}
+						else
+						{
+							SDL_Log("Illegal move!");
+							// printf("Illegal move!");
+						}
+						break;
 					}
 
 					// Handle arrow key events to change the snake's direction
@@ -468,7 +456,8 @@ void gameLoop(HRAC *hrac, SDL_Event *event, SDL_bool arrow_control)
 		}
 		if (!quit)
 		{
-			updateSnakePosition(hrac);
+			updateSnakePosition(hrac1);
+			updateSnakePosition(hrac2);
 			SDL_Delay(80);
 		}
 	}

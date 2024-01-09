@@ -30,9 +30,10 @@ HRAC *hrac2;
 
 void *playerThreadFunc(void *arg)
 {
-	struct arguments *localArgs = (struct arguments *)arg;
+	//struct arguments *localArgs = (struct arguments *)arg;
+	SDL_Event* event = (SDL_Event*)arg;
 	//pthread_mutex_lock(&mutex);
-	gameLoop(localArgs->hrac, localArgs->event, localArgs->arrow_control);
+	gameLoop(hrac1, hrac2, event);
 	//pthread_mutex_unlock(&mutex);
 	// cleanupSDL();
 	return NULL;
@@ -40,7 +41,14 @@ void *playerThreadFunc(void *arg)
 
 void *vykreslovacieVlaknoFunc(void *arg)
 {
-	renderCell(hrac1);
+	while (1)
+	{
+		renderCell(hrac1);
+		renderCell(hrac2);
+	}
+	
+	//HRAC* hrac = (HRAC*)arg;
+	
 	return NULL;
 }
 
@@ -68,25 +76,22 @@ int main()
 	hrac2->HADIK->previousTailY = 0;
 
 	SDL_Event event1;
-	struct arguments *hrac1Args = malloc(sizeof(struct arguments));
-	hrac1Args->event = &event1;
-	hrac1Args->hrac = hrac1;
-	hrac1Args->arrow_control = SDL_TRUE;
+	// struct arguments *hrac1Args = malloc(sizeof(struct arguments));
+	// hrac1Args->event = &event1;
+	// hrac1Args->hrac = hrac1;
+	// hrac1Args->arrow_control = SDL_TRUE;
 
-	SDL_Event event2;
-	struct arguments* hrac2Args = malloc(sizeof(struct arguments));
-	hrac2Args->event = &event2;
-	hrac2Args->hrac = hrac2;
-	hrac1Args->arrow_control = SDL_FALSE;
-
-
-
+	// SDL_Event event2;
+	// struct arguments* hrac2Args = malloc(sizeof(struct arguments));
+	// hrac2Args->event = &event2;
+	// hrac2Args->hrac = hrac2;
+	// hrac1Args->arrow_control = SDL_FALSE;
 	initGame();
 	initSnake(hrac1);
-	//initSnake(hrac2);
+	initSnake(hrac2);
 	randomFood();
 	drawGameBoard();
-	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, hrac1Args);
+	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, &event1);
 	//pthread_create(&vlaknoHrac2, NULL, playerThreadFunc, hrac2Args);
 	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
 	// gameLoop(hrac2);
@@ -96,12 +101,8 @@ int main()
 	// cleanUpMenu();
 
 	pthread_join(vlaknoHrac1, NULL);
+	//pthread_join(vlaknoHrac2, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
-
-	while (1)
-	{
-		
-	}
 	//pthread_mutex_destroy(&mutex);
 
 	return 0;
