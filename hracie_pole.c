@@ -116,7 +116,7 @@ void initGame()
 		SDL_Log("SDL could not initialize! SDL_Error: %s\n", IMG_GetError());
 	}
 
-	windowGame = SDL_CreateWindow("Snake Game", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
+	windowGame = SDL_CreateWindow("Server", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
 	if (windowGame == NULL)
 	{
 		fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());

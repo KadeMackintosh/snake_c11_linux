@@ -10,6 +10,9 @@
 #include <string.h> 
 #include <sys/socket.h> 
 #include <sys/types.h> 
+#include <sys/select.h>
+#include <unistd.h>
+
 #include <unistd.h> // read(), write(), close()
 #define MAX 80 
 #define PORT 8080 
@@ -34,7 +37,7 @@ struct arguments
 HRAC *hrac1;
 HRAC *hrac2;
 
-void sendFunc(int connfd) 
+void sendFunc(int sockfd)
 {
 	char buff[MAX];
 	int n;
@@ -43,14 +46,38 @@ void sendFunc(int connfd)
 		n = 0;
 		while ((buff[n++] = getchar()) != '\n')
 			;
-		write(connfd, buff, sizeof(buff));
-		
-		if (strncmp("exit", buff, 4) == 0) { 
-			printf("Server Exit...\n"); 
-			break; 
-		} 
+		write(sockfd, buff, sizeof(buff));
 	}
 }
+
+// void sendFunc(int sockfd) {
+//     char buff[MAX];
+//     int n;
+
+//     for (;;) {
+//         bzero(buff, sizeof(buff));
+
+//         // Check if input is available
+//         fd_set rfds;
+//         struct timeval tv;
+//         FD_ZERO(&rfds);
+//         FD_SET(STDIN_FILENO, &rfds);
+//         tv.tv_sec = 0;
+//         tv.tv_usec = 0;
+
+//         // Wait for a short time to check if input is available
+//         if (select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv) > 0) {
+//             // Input is available, read it
+//             n = 0;
+//             while ((buff[n++] = getchar()) != '\n');
+//             write(sockfd, buff, sizeof(buff));
+//         }
+
+//         // Add some delay to avoid high CPU usage
+//         usleep(10000);  // Sleep for 10 milliseconds
+//     }
+// }
+
 
 void receiveFunc(int connfd) 
 { 
@@ -84,7 +111,7 @@ void* receiveThreadFunc(void* arg) {
 
 void sendSignalToTurn(HRAC *hrac, char buff[])
 {
-	if (strcmp("up", buff)) 
+	if (strncmp("w", buff,1)==0) 
 	{
 		if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -97,7 +124,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strcmp("down", buff))
+	} else if (strncmp("s", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionY != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -110,7 +137,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strcmp("left", buff))
+	} else if (strncmp("a", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionX != 1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -123,7 +150,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strcmp("right", buff))
+	} else if (strncmp("d", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionX != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -136,7 +163,9 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	}
+	}else {
+        printf("Unknown command: %s\n", buff);
+    }
 }
 
 void *playerThreadFunc(void *arg)
@@ -260,8 +289,9 @@ int main()
 	// pthread_join(vykreslovacieVlakno, NULL);
 	// // pthread_mutex_destroy(&mutex);
 
-	pthread_t receiveThread;
+	pthread_t receiveThread, sendThread;
 	pthread_create(&receiveThread, NULL, receiveFunc, connfd);
+	// pthread_create(&sendThread, NULL, sendThreadFunc, connfd);
 	pthread_join(receiveThread, NULL);
 	pthread_join(vlaknoHrac1, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
