@@ -36,7 +36,7 @@ struct arguments
 
 HRAC *hrac1;
 HRAC *hrac2;
-//int quitGraphics = 0;
+int quitGraphics = 0;
 
 struct sendArguments{
 	int *connfd;
@@ -47,7 +47,7 @@ void sendFunc(int connfd, SDL_Event event)
 {
 	char buff[MAX];
 
-    while(!quit) {
+    while(!quitGraphics) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_KEYDOWN) {
                 // Handle key presses here
@@ -76,7 +76,7 @@ void sendFunc(int connfd, SDL_Event event)
                 write(connfd, buff, sizeof(buff));
 				if (strncmp(buff, "q", 1) == 0)
 				{
-					quit = 1;
+					quitGraphics = 1;
 					SDL_Log("Exiting server by server...");
 					//cleanupSDL();
 					//exit(0);
@@ -94,7 +94,7 @@ void receiveFunc(int connfd)
 	char buff[MAX]; 
 	int n; 
 	// infinite loop for chat 
-	while(!quit) { 
+	while(!quitGraphics) { 
 		bzero(buff, MAX);
 		// read the message from client and copy it in buffer 
 		read(connfd, buff, sizeof(buff)); 
@@ -102,7 +102,7 @@ void receiveFunc(int connfd)
 		printf("From client: %s\n", buff);
 		if (strncmp(buff, "q", 1) == 0)
 		{
-			quit = 1;
+			quitGraphics = 1;
 			SDL_Log("Exiting server by client...");
 			//cleanupSDL();
 			//exit(0);
@@ -195,7 +195,7 @@ void *playerThreadFunc(void *arg)
 
 void *vykreslovacieVlaknoFunc(void *arg)
 {
-	while (!quit)
+	while (!quitGraphics)
 	{
 		renderCellH1(hrac1); // viem, ze to nie je clean code ale co uz
 		renderCellH2(hrac2);
