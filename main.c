@@ -70,6 +70,7 @@ void sendFunc(int connfd, SDL_Event event)
 
                 // Send the message to the server immediately after key press
                 write(connfd, buff, sizeof(buff));
+				sendSignalToTurn(hrac1, buff);
             }
         }
     }
@@ -86,7 +87,7 @@ void receiveFunc(int connfd)
 		read(connfd, buff, sizeof(buff)); 
 		// print buffer which contains the client contents 
 		printf("From client: %s\n", buff);
-		sendSignalToTurn(hrac1, buff);
+		sendSignalToTurn(hrac2, buff);
 		SDL_Delay(80);
 		bzero(buff, MAX); 
 		n = 0; 
@@ -168,7 +169,8 @@ void *playerThreadFunc(void *arg)
 {
 	// struct arguments *localArgs = (struct arguments *)arg;
 	// pthread_mutex_lock(&mutex);
-	gameLoop(hrac1, NULL, NULL);
+	//HRAC* hrac = (HRAC*)arg;
+	gameLoop(hrac1, hrac2, NULL);
 	// pthread_mutex_unlock(&mutex);
 	//  cleanupSDL();
 	return NULL;
@@ -179,7 +181,7 @@ void *vykreslovacieVlaknoFunc(void *arg)
 	while (1)
 	{
 		renderCell(hrac1);
-		//renderCell(hrac2);
+		renderCell(hrac2);
 	}
 
 	// HRAC* hrac = (HRAC*)arg;
@@ -245,13 +247,13 @@ int main()
 	hrac1->HADIK->previousTailX = 0;
 	hrac1->HADIK->previousTailY = 0;
 
-	// hrac2 = vytvorHraca("Marek", 5);
-	// hrac2->HADIK->x = 1;
-	// hrac2->HADIK->y = 3;
-	// hrac2->HADIK->snakeDirectionX = 1;
-	// hrac2->HADIK->snakeDirectionY = 0;
-	// hrac2->HADIK->previousTailX = 0;
-	// hrac2->HADIK->previousTailY = 0;
+	hrac2 = vytvorHraca("Marek", 5);
+	hrac2->HADIK->x = 1;
+	hrac2->HADIK->y = 3;
+	hrac2->HADIK->snakeDirectionX = 1;
+	hrac2->HADIK->snakeDirectionY = 0;
+	hrac2->HADIK->previousTailX = 0;
+	hrac2->HADIK->previousTailY = 0;
 
 
 
@@ -268,12 +270,12 @@ int main()
 	// // hrac1Args->arrow_control = SDL_FALSE;
 	initGame();
 	initSnake(hrac1);
+	initSnake(hrac2);
 	// initSnake(hrac2);
 	randomFood();
 	drawGameBoard();
 	// pthread_create(&serverThreadId, NULL, serverThreadFunc, NULL);
 	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, NULL);
-	// // pthread_create(&vlaknoHrac2, NULL, playerThreadFunc, hrac2Args);
 	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
 	// // gameLoop(hrac2);
 	// // initMenu();

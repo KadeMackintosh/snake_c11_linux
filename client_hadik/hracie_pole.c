@@ -289,9 +289,9 @@ void updateSnakePosition(HRAC *hrac)
 	{
 		hrac->HADIK->snakeDirectionX = 0;
 		hrac->HADIK->snakeDirectionY = 0;
-		//SDL_Log("Prehral si! Nabural si do steny");
-		showMessageBox("Game Over", "Prehral si! Nabural si do steny", "Spat do menu", hrac);
-		showMessage("Simple Message Box", "Hello from SDL!", SDL_MESSAGEBOX_INFORMATION);
+		SDL_Log("Prehral si! Nabural si do steny");
+		quit = 1;
+		//cleanupSDL(hrac);
 	}
 	else
 	{
@@ -461,11 +461,11 @@ void gameLoop(HRAC *hrac1, HRAC *hrac2, SDL_Event *event)
 	// 		SDL_Delay(FRAME_RATE);
 	// 	}
 	// }
-	while (1)
+	while (!quit)
 	{
 		updateSnakePosition(hrac1);
 		//renderCell(hrac1);
-		//updateSnakePosition(hrac2);
+		updateSnakePosition(hrac2);
 		//renderCell(hrac2);
 		SDL_Delay(FRAME_RATE);
 	}

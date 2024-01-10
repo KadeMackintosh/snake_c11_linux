@@ -32,6 +32,7 @@ struct sendArguments{
 };
 
 HRAC *hrac1;
+HRAC *hrac2;
 
 void sendFunc(int sockfd, SDL_Event event) {
 	
@@ -64,6 +65,7 @@ void sendFunc(int sockfd, SDL_Event event) {
 
                 // Send the message to the server immediately after key press
                 write(sockfd, buff, sizeof(buff));
+				sendSignalToTurn(hrac2, buff);
             }
         }
     }
@@ -176,10 +178,11 @@ void* receiveThreadFunc(void* arg) {
 
 void *playerThreadFunc(void *arg)
 {
+	//HRAC* hrac = (HRAC*)arg;
 	// struct arguments *localArgs = (struct arguments *)arg;
 	//SDL_Event *event = (SDL_Event *)arg;
 	// pthread_mutex_lock(&mutex);
-	gameLoop(hrac1, NULL, NULL);
+	gameLoop(hrac1, hrac2, NULL);
 	// pthread_mutex_unlock(&mutex);
 	//  cleanupSDL();
 	return NULL;
@@ -190,7 +193,7 @@ void *vykreslovacieVlaknoFunc(void *arg)
 	while (1)
 	{
 		renderCell(hrac1);
-		//renderCell(hrac2);
+		renderCell(hrac2);
 	}
 
 	// HRAC* hrac = (HRAC*)arg;
@@ -245,16 +248,26 @@ int main()
 	hrac1->HADIK->snakeDirectionY = 0;
 	hrac1->HADIK->previousTailX = 0;
 	hrac1->HADIK->previousTailY = 0;
+
+	hrac2 = vytvorHraca("Marek", 5);
+	hrac2->HADIK->x = 1;
+	hrac2->HADIK->y = 3;
+	hrac2->HADIK->snakeDirectionX = 1;
+	hrac2->HADIK->snakeDirectionY = 0;
+	hrac2->HADIK->previousTailX = 0;
+	hrac2->HADIK->previousTailY = 0;
 	
 	pthread_t vlaknoHrac1, vykreslovacieVlakno;
 
 
 	initGame();
 	initSnake(hrac1);
+	initSnake(hrac2);
 	// initSnake(hrac2);
 	randomFood();
 	drawGameBoard();
 	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, NULL);
+
 	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
 	// function for chat
 	//receiveFunc(sockfd);
