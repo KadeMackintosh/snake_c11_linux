@@ -137,7 +137,7 @@ void initGame()
 		SDL_Log("Renderer could not be created! SDL_Error: %s\n", IMG_GetError());
 	}
 
-	initBoard();
+	initBoard(hrac1, hrac2);
 }
 
 void drawGameBoard()

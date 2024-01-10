@@ -1,3 +1,7 @@
+#include <stdio.h>
+#include <SDL.h>
+#include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "hrac.h"
 
 #ifndef SNAKE_HRACIE_POLE_H
@@ -8,7 +12,8 @@
 
 static enum CellType {
     PRAZDNE,
-    HAD,
+    HAD1,
+    HAD2,
     JEDLO
 };
 
@@ -20,8 +25,8 @@ static enum CellType {
 // };
 
 
-void initGame();
-void gameLoop(HRAC* hrac1,HRAC* hrac2, SDL_Event *event);
+void initGame(HRAC* hrac1,HRAC* hrac2);
+void gameLoop(HRAC* hrac1,HRAC* hrac2);
 void renderCell(HRAC* hrac);
 
 static enum CellType gameBoard[BOARD_SIZE_X][BOARD_SIZE_Y];
