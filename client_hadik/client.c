@@ -8,6 +8,8 @@
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include <SDL2/SDL.h>
+#include "hracie_pole.h"
+#include "hrac.h"
 #define MAX 80
 #define PORT 8080
 #define SA struct sockaddr
@@ -29,12 +31,13 @@ struct sendArguments{
 	SDL_Event *event;
 };
 
+HRAC *hrac1;
+
 void sendFunc(int sockfd, SDL_Event event) {
-	SDL_Window* window;
-    SDL_Init(SDL_INIT_VIDEO);
+	
 
     // Create an SDL window
-    window = SDL_CreateWindow("Client", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
+    
     char buff[MAX];
 
     for (;;) {
@@ -93,11 +96,70 @@ void receiveFunc(int sockfd)
 		bzero(buff, sizeof(buff));
 		read(sockfd, buff, sizeof(buff));
 		printf("From Server : %s\n", buff);
-		if ((strncmp(buff, "exit", 4)) == 0) {
-		 	printf("Client Exit...\n");
-		 	break;
-		}
+		sendSignalToTurn(hrac1, buff);
+		SDL_Delay(80);
+		bzero(buff, MAX); 
+		n = 0; 
 	}
+}
+
+void sendSignalToTurn(HRAC *hrac, char buff[])
+{
+	if (strncmp("w", buff,1)==0) 
+	{
+		if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
+		{
+			hrac->HADIK->snakeDirectionX = 0;
+			hrac->HADIK->snakeDirectionY = -1;
+			//printf(buff);
+		}
+		else
+		{
+			//SDL_Log("Illegal move!");
+			// printf("Illegal move!");
+		}
+	} else if (strncmp("s", buff,1)==0)
+	{
+		if (hrac1->HADIK->snakeDirectionY != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
+		{
+			hrac->HADIK->snakeDirectionX = 0;
+			hrac->HADIK->snakeDirectionY = 1;
+			//printf(buff);
+		}
+		else
+		{
+			//SDL_Log("Illegal move!");
+			// printf("Illegal move!");
+		}
+	} else if (strncmp("a", buff,1)==0)
+	{
+		if (hrac1->HADIK->snakeDirectionX != 1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
+		{
+			hrac->HADIK->snakeDirectionX = -1;
+			hrac->HADIK->snakeDirectionY = 0;
+			//printf(buff);
+		}
+		else
+		{
+			//SDL_Log("Illegal move!");
+			// printf("Illegal move!");
+		}
+	} else if (strncmp("d", buff,1)==0)
+	{
+		if (hrac1->HADIK->snakeDirectionX != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
+		{
+			hrac->HADIK->snakeDirectionX = 1;
+			hrac->HADIK->snakeDirectionY = 0;
+			//printf(buff);
+		}
+		else
+		{
+			//SDL_Log("Illegal move!");
+			// printf("Illegal move!");
+		}
+	}else {
+        printf("Unknown command: %s\n", buff);
+    }
 }
 
 void* sendThreadFunc(void* arg) {
@@ -112,10 +174,35 @@ void* receiveThreadFunc(void* arg) {
 	return NULL;
 }
 
+void *playerThreadFunc(void *arg)
+{
+	// struct arguments *localArgs = (struct arguments *)arg;
+	//SDL_Event *event = (SDL_Event *)arg;
+	// pthread_mutex_lock(&mutex);
+	gameLoop(hrac1, NULL, NULL);
+	// pthread_mutex_unlock(&mutex);
+	//  cleanupSDL();
+	return NULL;
+}
 
+void *vykreslovacieVlaknoFunc(void *arg)
+{
+	while (1)
+	{
+		renderCell(hrac1);
+		//renderCell(hrac2);
+	}
+
+	// HRAC* hrac = (HRAC*)arg;
+
+	return NULL;
+}
 
 int main()
 {
+	
+	
+
 	pthread_t sendThread, receiveThread;
 
 	int sockfd, connfd;
@@ -146,9 +233,29 @@ int main()
 	else
 		printf("connected to the server..\n");
 
+	//SDL_Window* window;
+	//window = SDL_CreateWindow("Client", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 800, 800, 0);
+    //SDL_Init(SDL_INIT_VIDEO);
+	//SDL_Init(SDL_INIT_EVENTS);
+	
+	hrac1 = vytvorHraca("Kade", 5);
+	hrac1->HADIK->x = 1;
+	hrac1->HADIK->y = 1;
+	hrac1->HADIK->snakeDirectionX = 1; // Initial direction (right)
+	hrac1->HADIK->snakeDirectionY = 0;
+	hrac1->HADIK->previousTailX = 0;
+	hrac1->HADIK->previousTailY = 0;
+	
+	pthread_t vlaknoHrac1, vykreslovacieVlakno;
 
-	SDL_Init(SDL_INIT_EVENTS);
 
+	initGame();
+	initSnake(hrac1);
+	// initSnake(hrac2);
+	randomFood();
+	drawGameBoard();
+	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, NULL);
+	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
 	// function for chat
 	//receiveFunc(sockfd);
 	SDL_Event event;
@@ -156,11 +263,15 @@ int main()
 	sendArgs->sockfd=&sockfd;
 	sendArgs->event=&event;
 	
-	pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
+	//pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
 	pthread_create(&receiveThread, NULL, receiveThreadFunc, &sockfd);
 
 	pthread_join(receiveThread, NULL);
-	pthread_join(sendThread, NULL);
+	pthread_join(vlaknoHrac1, NULL);
+	pthread_join(vykreslovacieVlakno, NULL);
+	//pthread_join(sendThread, NULL);
 	// close the socket
 	close(sockfd);
+
+	
 }

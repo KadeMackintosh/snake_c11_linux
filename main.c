@@ -37,17 +37,42 @@ struct arguments
 HRAC *hrac1;
 HRAC *hrac2;
 
-void sendFunc(int connfd)
+struct sendArguments{
+	int *connfd;
+	SDL_Event *event;
+};
+
+void sendFunc(int connfd, SDL_Event event)
 {
 	char buff[MAX];
-	int n;
-	for (;;) {
-		bzero(buff, sizeof(buff));
-		n = 0;
-		while ((buff[n++] = getchar()) != '\n')
-			;
-		write(connfd, buff, sizeof(buff));
-	}
+
+    for (;;) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_KEYDOWN) {
+                // Handle key presses here
+                switch (event.key.keysym.sym) {
+                    case SDLK_w:
+                        strcpy(buff, "w");
+                        break;
+                    case SDLK_a:
+                        strcpy(buff, "a");
+                        break;
+                    case SDLK_s:
+                        strcpy(buff, "s");
+                        break;
+                    case SDLK_d:
+                        strcpy(buff, "d");
+                        break;
+                    default:
+                        // Ignore other keys
+                        continue;  // Skip the rest of the loop for non-matching keys
+                }
+
+                // Send the message to the server immediately after key press
+                write(connfd, buff, sizeof(buff));
+            }
+        }
+    }
 }
 
 // void sendFunc(int sockfd) {
@@ -98,8 +123,8 @@ void receiveFunc(int connfd)
 }
 
 void* sendThreadFunc(void* arg) {
-	int connfd = *(int*)arg;
-	sendFunc(connfd);
+	struct sendArguments *localArgs = (struct sendArguments *)arg;
+	sendFunc((*localArgs->connfd),*(localArgs->event)); 
 	return NULL;
 }
 
@@ -117,7 +142,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 		{
 			hrac->HADIK->snakeDirectionX = 0;
 			hrac->HADIK->snakeDirectionY = -1;
-			printf(buff);
+			//printf(buff);
 		}
 		else
 		{
@@ -130,7 +155,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 		{
 			hrac->HADIK->snakeDirectionX = 0;
 			hrac->HADIK->snakeDirectionY = 1;
-			printf(buff);
+			//printf(buff);
 		}
 		else
 		{
@@ -143,7 +168,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 		{
 			hrac->HADIK->snakeDirectionX = -1;
 			hrac->HADIK->snakeDirectionY = 0;
-			printf(buff);
+			//printf(buff);
 		}
 		else
 		{
@@ -156,7 +181,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 		{
 			hrac->HADIK->snakeDirectionX = 1;
 			hrac->HADIK->snakeDirectionY = 0;
-			printf(buff);
+			//printf(buff);
 		}
 		else
 		{
@@ -171,9 +196,8 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 void *playerThreadFunc(void *arg)
 {
 	// struct arguments *localArgs = (struct arguments *)arg;
-	SDL_Event *event = (SDL_Event *)arg;
 	// pthread_mutex_lock(&mutex);
-	gameLoop(hrac1, NULL, event);
+	gameLoop(hrac1, NULL, NULL);
 	// pthread_mutex_unlock(&mutex);
 	//  cleanupSDL();
 	return NULL;
@@ -258,7 +282,9 @@ int main()
 	// hrac2->HADIK->previousTailX = 0;
 	// hrac2->HADIK->previousTailY = 0;
 
-	SDL_Event event1;
+
+
+	//SDL_Event event1;
 	// // struct arguments *hrac1Args = malloc(sizeof(struct arguments));
 	// // hrac1Args->event = &event1;
 	// // hrac1Args->hrac = hrac1;
@@ -275,7 +301,7 @@ int main()
 	randomFood();
 	drawGameBoard();
 	// pthread_create(&serverThreadId, NULL, serverThreadFunc, NULL);
-	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, &event1);
+	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, NULL);
 	// // pthread_create(&vlaknoHrac2, NULL, playerThreadFunc, hrac2Args);
 	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
 	// // gameLoop(hrac2);
@@ -283,16 +309,20 @@ int main()
 
 	// // menuLoop(hrac1);
 	// // cleanUpMenu();
-
+	SDL_Event event;
+	struct sendArguments *sendArgs = malloc(sizeof(struct sendArguments));
+	sendArgs->connfd=&connfd;
+	sendArgs->event=&event;
 	
 	// // pthread_join(vlaknoHrac2, NULL);
 	// pthread_join(vykreslovacieVlakno, NULL);
 	// // pthread_mutex_destroy(&mutex);
 
 	pthread_t receiveThread, sendThread;
-	pthread_create(&receiveThread, NULL, receiveThreadFunc, &connfd);
-	pthread_create(&sendThread, NULL, sendThreadFunc, &connfd);
-	pthread_join(receiveThread, NULL);
+	//pthread_create(&receiveThread, NULL, receiveThreadFunc, &connfd);
+	pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
+	pthread_join(sendThread, NULL);
+	//pthread_join(receiveThread, NULL);
 	pthread_join(vlaknoHrac1, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
 	return 0;

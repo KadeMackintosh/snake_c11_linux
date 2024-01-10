@@ -4,11 +4,11 @@ CFLAGS = -Wall -Wextra -std=c11 $(shell sdl2-config --cflags) $(shell pkg-config
 LDFLAGS = $(shell sdl2-config --libs) $(shell pkg-config --libs SDL2_image) $(shell pkg-config --libs SDL2_ttf) -lcsfml-graphics -lcsfml-window -lcsfml-system -lcsfml-network
 
 # Source files and output executable
-SRCS = client.c
+SRCS = client.c hracie_pole.c hrac.c
 TARGET = client
 
 # Object files
-OBJS = $(SRCS:.c=.o)
+OBJS = $(SRCS:.c=.o) 
 
 # Build rule
 $(TARGET): $(OBJS)
