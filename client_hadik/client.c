@@ -33,6 +33,7 @@ struct sendArguments{
 
 HRAC *hrac1;
 HRAC *hrac2;
+int quitGraphics = 0;
 
 void sendFunc(int sockfd, SDL_Event event) {
 	
@@ -41,7 +42,7 @@ void sendFunc(int sockfd, SDL_Event event) {
     
     char buff[MAX];
 
-    for (;;) {
+    while(!quitGraphics) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_KEYDOWN) {
                 // Handle key presses here
@@ -69,14 +70,17 @@ void sendFunc(int sockfd, SDL_Event event) {
                 // Send the message to the server immediately after key press
                 write(sockfd, buff, sizeof(buff));
 				if(strncmp(buff, "q", 1) == 0) {
-					printf("Exiting client by client...");
-					cleanupSDL();
+					quitGraphics = 1;
+					SDL_Log("Exiting client by client...");
+					//cleanupSDL();
+					//exit(0);
 					break;
 				}
 				sendSignalToTurn(hrac2, buff);
             }
         }
     }
+	printf("exited for loop in sendFunc on client");
 }
 
 
@@ -102,22 +106,24 @@ void receiveFunc(int sockfd)
 {
 	char buff[MAX];
 	int n;
-	for (;;) {
+	while(!quitGraphics) {
 		bzero(buff, sizeof(buff));
 		read(sockfd, buff, sizeof(buff));
 		printf("From Server : %s\n", buff);
-		sendSignalToTurn(hrac1, buff);
 		if (strncmp(buff, "q", 1) == 0)
 		{
-			printf("Exiting client by server...");
-			cleanupSDL();
+			quitGraphics = 1;
+			SDL_Log("Exiting client by server...");
+			//cleanupSDL();
+			//exit(0);
 			break;
 		}
-		
+		sendSignalToTurn(hrac1, buff);
 		SDL_Delay(80);
 		bzero(buff, MAX); 
 		n = 0; 
 	}
+	printf("exited for loop in receiveFunc on client");
 }
 
 void sendSignalToTurn(HRAC *hrac, char buff[])
@@ -205,7 +211,7 @@ void *playerThreadFunc(void *arg)
 
 void *vykreslovacieVlaknoFunc(void *arg)
 {
-	while (1)
+	while (!quitGraphics)
 	{
 		renderCellH1(hrac1);
 		renderCellH2(hrac2);
@@ -309,7 +315,8 @@ int main()
 	pthread_join(sendThread, NULL);
 	// close the socket
 	close(sockfd);
-	free(sendArgs);
-	destroyHrac(hrac1);
-	destroyHrac(hrac2);
+	//free(sendArgs);
+	//destroyHrac(hrac1);
+	//destroyHrac(hrac2);
+	return 0;
 }

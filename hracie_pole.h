@@ -17,14 +17,8 @@ static enum CellType {
     JEDLO
 };
 
-// static enum Movement {
-//     UP = {},
-//     DOWN,
-//     LEFT,
-//     RIGHT
-// };
 
-
+//static int quit = 0;
 void initGame(HRAC* hrac1,HRAC* hrac2);
 void gameLoop(HRAC* hrac1,HRAC* hrac2);
 void renderCell(HRAC* hrac);

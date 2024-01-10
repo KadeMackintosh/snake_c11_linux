@@ -377,7 +377,7 @@ void updateSnakePosition(HRAC *hrac, enum CellType pHAD)
 	{
 		hrac->HADIK->snakeDirectionX = 0;
 		hrac->HADIK->snakeDirectionY = 0;
-		SDL_Log("Prehral si! Nabural si do steny");
+		//SDL_Log("Prehral si! Nabural si do steny");
 		quit = 1;
 		//gameOver(hrac);
 		//cleanupSDL(hrac);

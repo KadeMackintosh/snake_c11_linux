@@ -36,6 +36,7 @@ struct arguments
 
 HRAC *hrac1;
 HRAC *hrac2;
+//int quitGraphics = 0;
 
 struct sendArguments{
 	int *connfd;
@@ -46,7 +47,7 @@ void sendFunc(int connfd, SDL_Event event)
 {
 	char buff[MAX];
 
-    for (;;) {
+    while(!quit) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_KEYDOWN) {
                 // Handle key presses here
@@ -63,6 +64,9 @@ void sendFunc(int connfd, SDL_Event event)
                     case SDLK_d:
                         strcpy(buff, "d");
                         break;
+					case SDLK_q:
+						strcpy(buff, "q");
+						break;
                     default:
                         // Ignore other keys
                         continue;  // Skip the rest of the loop for non-matching keys
@@ -72,14 +76,17 @@ void sendFunc(int connfd, SDL_Event event)
                 write(connfd, buff, sizeof(buff));
 				if (strncmp(buff, "q", 1) == 0)
 				{
-					printf("Exiting server by server...");
-					cleanupSDL();
+					quit = 1;
+					SDL_Log("Exiting server by server...");
+					//cleanupSDL();
+					//exit(0);
 					break;
-			}
+				}
 				sendSignalToTurn(hrac1, buff);
             }
         }
     }
+	printf("exited for loop in sendFunc on server");
 }
 
 void receiveFunc(int connfd) 
@@ -87,23 +94,26 @@ void receiveFunc(int connfd)
 	char buff[MAX]; 
 	int n; 
 	// infinite loop for chat 
-	for (;;) { 
+	while(!quit) { 
 		bzero(buff, MAX);
 		// read the message from client and copy it in buffer 
 		read(connfd, buff, sizeof(buff)); 
 		// print buffer which contains the client contents 
 		printf("From client: %s\n", buff);
-		sendSignalToTurn(hrac2, buff);
 		if (strncmp(buff, "q", 1) == 0)
 		{
-			printf("Exiting server by client...");
-			cleanupSDL();
+			quit = 1;
+			SDL_Log("Exiting server by client...");
+			//cleanupSDL();
+			//exit(0);
 			break;
 		}
+		sendSignalToTurn(hrac2, buff);
 		SDL_Delay(80);
 		bzero(buff, MAX); 
 		n = 0; 
-	} 
+	}
+	printf("exited for loop in receiveFunc on server"); 
 }
 
 void* sendThreadFunc(void* arg) {
@@ -185,7 +195,7 @@ void *playerThreadFunc(void *arg)
 
 void *vykreslovacieVlaknoFunc(void *arg)
 {
-	while (1)
+	while (!quit)
 	{
 		renderCellH1(hrac1); // viem, ze to nie je clean code ale co uz
 		renderCellH2(hrac2);
@@ -292,8 +302,9 @@ int main()
 	pthread_join(vlaknoHraci, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
 	
-	free(sendArgs);
-	destroyHrac(hrac1);
-	destroyHrac(hrac2);
+	//free(sendArgs);
+	//destroyHrac(hrac1);
+	//destroyHrac(hrac2);
+	close(sockfd);
 	return 0;
 }
