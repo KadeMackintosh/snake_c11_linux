@@ -1,9 +1,9 @@
 ﻿#include <stdio.h>
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include "hracie_pole.h"
 #include "hrac.h"
-// #include "menu.h"
 
 #define V_BUNKA 10
 #define FRAME_RATE 80
@@ -114,6 +114,11 @@ void initGame()
 	{
 		fprintf(stderr, "SDL could not initialize! SDL_Error: %s\n", SDL_GetError());
 		SDL_Log("SDL could not initialize! SDL_Error: %s\n", IMG_GetError());
+	}
+
+	if (TTF_Init() < 0)
+	{
+		fprintf(stderr, "TTF could not initialize! TTF_Error: %s\n", SDL_GetError());
 	}
 
 	windowGame = SDL_CreateWindow("Server", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
@@ -242,6 +247,30 @@ void showMessageBox(const char *title, const char *message, char *buttonText, HR
 	// }
 }
 
+void gameOver(HRAC* hrac) {
+	TTF_Font* font = TTF_OpenFont("arial-unicode-ms.ttf", 48);
+	if (font == NULL) {
+		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
+	}
+
+	SDL_Surface* textSurface;
+	SDL_Texture* textTexture;
+	SDL_Rect textRect = {BOARD_SIZE_X / 2, BOARD_SIZE_Y / 2, BOARD_SIZE_X / 2, BOARD_SIZE_Y / 2};
+	//button->rect = (SDL_Rect){ x, y, width, height };
+	SDL_Color color = { 211,211,211, 255 };
+
+	SDL_SetRenderDrawColor(rendererGame, color.r, color.g, color.b, color.a);
+	SDL_RenderFillRect(rendererGame, &textRect);
+	char gameOverMessage[] = "Hra skončila, vyhral: ";
+	strncat(gameOverMessage, hrac->meno, strlen(hrac->meno));
+	textSurface = TTF_RenderUTF8_Blended(font, gameOverMessage, color);
+	textTexture = SDL_CreateTextureFromSurface(rendererGame, textSurface);
+	SDL_RenderCopy(rendererGame, textTexture, NULL, &textRect);
+	SDL_RenderPresent(rendererGame);
+	SDL_FreeSurface(textSurface);
+	SDL_DestroyTexture(textTexture);
+}
+
 void renderCell(HRAC *hrac)
 {
 	SDL_Rect cellRect = {0, 0, V_BUNKA, V_BUNKA};
@@ -291,6 +320,7 @@ void updateSnakePosition(HRAC *hrac)
 		hrac->HADIK->snakeDirectionY = 0;
 		SDL_Log("Prehral si! Nabural si do steny");
 		quit = 1;
+		//gameOver(hrac);
 		//cleanupSDL(hrac);
 	}
 	else

@@ -47,16 +47,16 @@ void sendFunc(int sockfd, SDL_Event event) {
                 // Handle key presses here
                 switch (event.key.keysym.sym) {
                     case SDLK_w:
-                        strcpy(buff, "8");
+                        strcpy(buff, "w");
                         break;
                     case SDLK_a:
-                        strcpy(buff, "4");
+                        strcpy(buff, "a");
                         break;
                     case SDLK_s:
-                        strcpy(buff, "5");
+                        strcpy(buff, "s");
                         break;
                     case SDLK_d:
-                        strcpy(buff, "6");
+                        strcpy(buff, "d");
                         break;
                     default:
                         // Ignore other keys

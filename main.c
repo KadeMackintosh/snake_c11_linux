@@ -108,7 +108,7 @@ void* receiveThreadFunc(void* arg) {
 
 void sendSignalToTurn(HRAC *hrac, char buff[])
 {
-	if (strncmp("8", buff,1)==0) 
+	if (strncmp("w", buff,1)==0) 
 	{
 		if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -121,7 +121,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strncmp("5", buff,1)==0)
+	} else if (strncmp("s", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionY != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -134,7 +134,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strncmp("4", buff,1)==0)
+	} else if (strncmp("a", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionX != 1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -147,7 +147,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strncmp("6", buff,1)==0)
+	} else if (strncmp("d", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionX != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
