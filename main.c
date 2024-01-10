@@ -37,7 +37,7 @@ struct arguments
 HRAC *hrac1;
 HRAC *hrac2;
 
-void sendFunc(int sockfd)
+void sendFunc(int connfd)
 {
 	char buff[MAX];
 	int n;
@@ -46,7 +46,7 @@ void sendFunc(int sockfd)
 		n = 0;
 		while ((buff[n++] = getchar()) != '\n')
 			;
-		write(sockfd, buff, sizeof(buff));
+		write(connfd, buff, sizeof(buff));
 	}
 }
 
@@ -290,8 +290,8 @@ int main()
 	// // pthread_mutex_destroy(&mutex);
 
 	pthread_t receiveThread, sendThread;
-	pthread_create(&receiveThread, NULL, receiveFunc, connfd);
-	// pthread_create(&sendThread, NULL, sendThreadFunc, connfd);
+	pthread_create(&receiveThread, NULL, receiveThreadFunc, &connfd);
+	pthread_create(&sendThread, NULL, sendThreadFunc, &connfd);
 	pthread_join(receiveThread, NULL);
 	pthread_join(vlaknoHrac1, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);

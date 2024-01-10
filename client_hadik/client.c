@@ -157,9 +157,9 @@ int main()
 	sendArgs->event=&event;
 	
 	pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
-	//pthread_create(&receiveThread, NULL, receiveThreadFunc, &sockfd);
+	pthread_create(&receiveThread, NULL, receiveThreadFunc, &sockfd);
 
-	//pthread_join(receiveThread, NULL);
+	pthread_join(receiveThread, NULL);
 	pthread_join(sendThread, NULL);
 	// close the socket
 	close(sockfd);
