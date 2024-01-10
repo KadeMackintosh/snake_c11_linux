@@ -70,6 +70,12 @@ void sendFunc(int connfd, SDL_Event event)
 
                 // Send the message to the server immediately after key press
                 write(connfd, buff, sizeof(buff));
+				if (strncmp(buff, "q", 1) == 0)
+				{
+					printf("Exiting server by server...");
+					cleanupSDL();
+					break;
+			}
 				sendSignalToTurn(hrac1, buff);
             }
         }
@@ -88,6 +94,12 @@ void receiveFunc(int connfd)
 		// print buffer which contains the client contents 
 		printf("From client: %s\n", buff);
 		sendSignalToTurn(hrac2, buff);
+		if (strncmp(buff, "q", 1) == 0)
+		{
+			printf("Exiting server by client...");
+			cleanupSDL();
+			break;
+		}
 		SDL_Delay(80);
 		bzero(buff, MAX); 
 		n = 0; 
@@ -279,5 +291,9 @@ int main()
 	pthread_join(receiveThread, NULL);
 	pthread_join(vlaknoHraci, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
+	
+	free(sendArgs);
+	destroyHrac(hrac1);
+	destroyHrac(hrac2);
 	return 0;
 }

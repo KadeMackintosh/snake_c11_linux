@@ -58,6 +58,9 @@ void sendFunc(int sockfd, SDL_Event event) {
                     case SDLK_d:
                         strcpy(buff, "d");
                         break;
+					case SDLK_q:
+						strcpy(buff, "q");
+						break;
                     default:
                         // Ignore other keys
                         continue;  // Skip the rest of the loop for non-matching keys
@@ -65,6 +68,11 @@ void sendFunc(int sockfd, SDL_Event event) {
 
                 // Send the message to the server immediately after key press
                 write(sockfd, buff, sizeof(buff));
+				if(strncmp(buff, "q", 1) == 0) {
+					printf("Exiting client by client...");
+					cleanupSDL();
+					break;
+				}
 				sendSignalToTurn(hrac2, buff);
             }
         }
@@ -99,6 +107,13 @@ void receiveFunc(int sockfd)
 		read(sockfd, buff, sizeof(buff));
 		printf("From Server : %s\n", buff);
 		sendSignalToTurn(hrac1, buff);
+		if (strncmp(buff, "q", 1) == 0)
+		{
+			printf("Exiting client by server...");
+			cleanupSDL();
+			break;
+		}
+		
 		SDL_Delay(80);
 		bzero(buff, MAX); 
 		n = 0; 
@@ -195,8 +210,6 @@ void *vykreslovacieVlaknoFunc(void *arg)
 		renderCellH1(hrac1);
 		renderCellH2(hrac2);
 	}
-
-	// HRAC* hrac = (HRAC*)arg;
 
 	return NULL;
 }
@@ -296,6 +309,7 @@ int main()
 	pthread_join(sendThread, NULL);
 	// close the socket
 	close(sockfd);
-
-	
+	free(sendArgs);
+	destroyHrac(hrac1);
+	destroyHrac(hrac2);
 }
