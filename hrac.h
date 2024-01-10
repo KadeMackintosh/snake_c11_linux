@@ -15,6 +15,7 @@
 typedef struct hrac {
     char* meno;
     SDL_Surface *snake_image_surface;
+    int hracVyhral;
     struct hadik {
         int dlzka;
         int x;

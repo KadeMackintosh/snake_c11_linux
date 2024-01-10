@@ -133,7 +133,7 @@ void initGame(HRAC* hrac1, HRAC* hrac2)
 		fprintf(stderr, "TTF could not initialize! TTF_Error: %s\n", SDL_GetError());
 	}
 
-	windowGame = SDL_CreateWindow("Server", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
+	windowGame = SDL_CreateWindow(hrac1->meno, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
 	if (windowGame == NULL)
 	{
 		fprintf(stderr, "Window could not be created! SDL_Error: %s\n", SDL_GetError());
@@ -279,23 +279,25 @@ void showMessageBox(const char *title, const char *message, char *buttonText, HR
 }
 
 void gameOver(HRAC* hrac) {
-	TTF_Font* font = TTF_OpenFont("arial-unicode-ms.ttf", 48);
+	TTF_Font* font = TTF_OpenFont("arial-unicode-ms.ttf", 20);
 	if (font == NULL) {
 		printf("Failed to load font! SDL_ttf Error: %s\n", TTF_GetError());
 	}
 
 	SDL_Surface* textSurface;
 	SDL_Texture* textTexture;
-	SDL_Rect textRect = {BOARD_SIZE_X / 2, BOARD_SIZE_Y / 2, BOARD_SIZE_X / 2, BOARD_SIZE_Y / 2};
-	//button->rect = (SDL_Rect){ x, y, width, height };
-	SDL_Color color = { 211,211,211, 255 };
+	SDL_Rect textRect = {0, BOARD_SIZE_Y / 4, 800, 400};
+	SDL_Color color = { 255,0,0, 255 };
 
 	SDL_SetRenderDrawColor(rendererGame, color.r, color.g, color.b, color.a);
-	SDL_RenderFillRect(rendererGame, &textRect);
-	char gameOverMessage[] = "Hra skončila, vyhral: ";
+	char gameOverMessage[100] = "Hra skončila, vyhral: ";
 	strncat(gameOverMessage, hrac->meno, strlen(hrac->meno));
 	textSurface = TTF_RenderUTF8_Blended(font, gameOverMessage, color);
 	textTexture = SDL_CreateTextureFromSurface(rendererGame, textSurface);
+	if (textTexture == NULL)
+	{
+		printf("Failed to create texture! SDL Error: %s\n", SDL_GetError());
+	}
 	SDL_RenderCopy(rendererGame, textTexture, NULL, &textRect);
 	SDL_RenderPresent(rendererGame);
 	SDL_FreeSurface(textSurface);
@@ -324,7 +326,7 @@ void renderCellH1(HRAC *hrac1)
 	if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
 	{
 		fprintf(stderr, "Failed to render apple image: %s\n", SDL_GetError());
-	}
+	}	
 
 	SDL_RenderPresent(rendererGame);
 }
@@ -379,7 +381,9 @@ void updateSnakePosition(HRAC *hrac, enum CellType pHAD)
 		hrac->HADIK->snakeDirectionY = 0;
 		SDL_Log("Prehral si! Nabural si do steny");
 		quit = 1;
-		//gameOver(hrac);
+		hrac->hracVyhral = -1;
+		// SDL_Delay(80);
+		// gameOver(hrac);
 		//cleanupSDL(hrac);
 	}
 	else
@@ -391,9 +395,11 @@ void updateSnakePosition(HRAC *hrac, enum CellType pHAD)
 			randomFood();
 		}
 
-		if (gameBoard[newSnakeX][newSnakeY] == HAD1 || gameBoard[newSnakeX][newSnakeY] == HAD2)
+		if ((gameBoard[newSnakeX][newSnakeY] == HAD1) || (gameBoard[newSnakeX][newSnakeY] == HAD2))
 		{
 			//SDL_Log("Prehral si! Zjedol si hada");
+			quit = 1;
+			hrac->hracVyhral = -1;
 			
 		}
 		//// Update the head position
@@ -417,4 +423,12 @@ void gameLoop(HRAC *hrac1, HRAC *hrac2)
 		updateSnakePosition(hrac2, HAD2);
 		SDL_Delay(FRAME_RATE);
 	}
+	if (hrac1->hracVyhral == -1)
+	{
+		hrac2->hracVyhral = 1;
+	}else if(hrac2->hracVyhral == -1){
+		hrac1->hracVyhral = 1;
+	}
+	
+
 }

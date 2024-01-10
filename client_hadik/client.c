@@ -13,18 +13,7 @@
 #define MAX 80
 #define PORT 8080
 #define SA struct sockaddr
-// void sendFunc(int sockfd)
-// {
-// 	char buff[MAX];
-// 	int n;
-// 	for (;;) {
-// 		bzero(buff, sizeof(buff));
-// 		n = 0;
-// 		while ((buff[n++] = getchar()) != '\n')
-// 			;
-// 		write(sockfd, buff, sizeof(buff));
-// 	}
-// }
+
 
 struct sendArguments{
 	int *sockfd;
@@ -83,24 +72,6 @@ void sendFunc(int sockfd, SDL_Event event) {
 	printf("exited for loop in sendFunc on client");
 }
 
-
-// void receiveFunc(int connfd) 
-// { 
-// 	char buff[MAX]; 
-// 	int n; 
-// 	// infinite loop for chat 
-// 	for (;;) { 
-// 		bzero(buff, MAX);
-// 		// read the message from client and copy it in buffer 
-// 		read(connfd, buff, sizeof(buff)); 
-// 		// print buffer which contains the client contents 
-// 		printf("From client: %s\n", buff);
-// 		sendSignalToTurn(hrac1, buff);
-// 		SDL_Delay(80);
-// 		bzero(buff, MAX); 
-// 		n = 0; 
-// 	} 
-// }
 
 void receiveFunc(int sockfd)
 {
@@ -213,10 +184,22 @@ void *vykreslovacieVlaknoFunc(void *arg)
 {
 	while (!quitGraphics)
 	{
-		renderCellH1(hrac1);
+		renderCellH1(hrac1); // viem, ze to nie je clean code ale co uz
 		renderCellH2(hrac2);
-	}
 
+		if (hrac1->hracVyhral == 1)
+		{
+			SDL_Log(" %d vykreslovacieVlaknoFunc - game over hrac1->hracVyhral == 1", hrac1->hracVyhral);
+			gameOver(hrac1);
+			hrac1->hracVyhral = 5;
+		}
+		else if (hrac2->hracVyhral == 1)
+		{
+			SDL_Log("vykreslovacieVlaknoFunc - game over: hrac2->hracVyhral == 1", hrac2->hracVyhral);
+			gameOver(hrac2);
+			hrac2->hracVyhral = 5;
+		}
+	}
 	return NULL;
 }
 
@@ -267,6 +250,7 @@ int main()
 	hrac1->HADIK->snakeDirectionY = 0;
 	hrac1->HADIK->previousTailX = 0;
 	hrac1->HADIK->previousTailY = 0;
+	hrac1->hracVyhral= 0;
 
 	hrac1->snake_image_surface = IMG_Load("images/snake_pattern.jpg");
 	if (!(hrac1->snake_image_surface))
@@ -281,7 +265,7 @@ int main()
 	hrac2->HADIK->snakeDirectionY = 0;
 	hrac2->HADIK->previousTailX = 0;
 	hrac2->HADIK->previousTailY = 0;
-	
+	hrac2->hracVyhral= 0;
 	hrac2->snake_image_surface = IMG_Load("images/snake2_pattern.png");
 	
 	if (!(hrac1->snake_image_surface))
@@ -293,9 +277,10 @@ int main()
 
 
 	initGame(hrac1, hrac2);
-	// initSnake(hrac2);
+	initSnake(hrac1, hrac2);
 	randomFood();
 	drawGameBoard();
+	// gameOver(hrac2);
 	pthread_create(&vlaknoHrac1, NULL, playerThreadFunc, NULL);
 
 	pthread_create(&vykreslovacieVlakno, NULL, vykreslovacieVlaknoFunc, NULL);
