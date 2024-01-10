@@ -46,16 +46,16 @@ void sendFunc(int sockfd, SDL_Event event) {
                 // Handle key presses here
                 switch (event.key.keysym.sym) {
                     case SDLK_w:
-                        strcpy(buff, "w");
+                        strcpy(buff, "8");
                         break;
                     case SDLK_a:
-                        strcpy(buff, "a");
+                        strcpy(buff, "4");
                         break;
                     case SDLK_s:
-                        strcpy(buff, "s");
+                        strcpy(buff, "5");
                         break;
                     case SDLK_d:
-                        strcpy(buff, "d");
+                        strcpy(buff, "6");
                         break;
                     default:
                         // Ignore other keys
@@ -263,13 +263,13 @@ int main()
 	sendArgs->sockfd=&sockfd;
 	sendArgs->event=&event;
 	
-	//pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
+	pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
 	pthread_create(&receiveThread, NULL, receiveThreadFunc, &sockfd);
 
 	pthread_join(receiveThread, NULL);
 	pthread_join(vlaknoHrac1, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
-	//pthread_join(sendThread, NULL);
+	pthread_join(sendThread, NULL);
 	// close the socket
 	close(sockfd);
 

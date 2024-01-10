@@ -75,35 +75,6 @@ void sendFunc(int connfd, SDL_Event event)
     }
 }
 
-// void sendFunc(int sockfd) {
-//     char buff[MAX];
-//     int n;
-
-//     for (;;) {
-//         bzero(buff, sizeof(buff));
-
-//         // Check if input is available
-//         fd_set rfds;
-//         struct timeval tv;
-//         FD_ZERO(&rfds);
-//         FD_SET(STDIN_FILENO, &rfds);
-//         tv.tv_sec = 0;
-//         tv.tv_usec = 0;
-
-//         // Wait for a short time to check if input is available
-//         if (select(STDIN_FILENO + 1, &rfds, NULL, NULL, &tv) > 0) {
-//             // Input is available, read it
-//             n = 0;
-//             while ((buff[n++] = getchar()) != '\n');
-//             write(sockfd, buff, sizeof(buff));
-//         }
-
-//         // Add some delay to avoid high CPU usage
-//         usleep(10000);  // Sleep for 10 milliseconds
-//     }
-// }
-
-
 void receiveFunc(int connfd) 
 { 
 	char buff[MAX]; 
@@ -136,7 +107,7 @@ void* receiveThreadFunc(void* arg) {
 
 void sendSignalToTurn(HRAC *hrac, char buff[])
 {
-	if (strncmp("w", buff,1)==0) 
+	if (strncmp("8", buff,1)==0) 
 	{
 		if (hrac->HADIK->snakeDirectionY != 1 || hrac->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -149,7 +120,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strncmp("s", buff,1)==0)
+	} else if (strncmp("5", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionY != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -162,7 +133,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strncmp("a", buff,1)==0)
+	} else if (strncmp("4", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionX != 1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -175,7 +146,7 @@ void sendSignalToTurn(HRAC *hrac, char buff[])
 			//SDL_Log("Illegal move!");
 			// printf("Illegal move!");
 		}
-	} else if (strncmp("d", buff,1)==0)
+	} else if (strncmp("6", buff,1)==0)
 	{
 		if (hrac1->HADIK->snakeDirectionX != -1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
 		{
@@ -319,10 +290,10 @@ int main()
 	// // pthread_mutex_destroy(&mutex);
 
 	pthread_t receiveThread, sendThread;
-	//pthread_create(&receiveThread, NULL, receiveThreadFunc, &connfd);
+	pthread_create(&receiveThread, NULL, receiveThreadFunc, &connfd);
 	pthread_create(&sendThread, NULL, sendThreadFunc, sendArgs);
 	pthread_join(sendThread, NULL);
-	//pthread_join(receiveThread, NULL);
+	pthread_join(receiveThread, NULL);
 	pthread_join(vlaknoHrac1, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
 	return 0;
