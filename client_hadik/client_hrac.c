@@ -3,7 +3,7 @@
 //
 
 #include <stdio.h>
-#include "hrac.h"
+#include "client_hrac.h"
 
 HRAC* vytvorHraca(const char* meno, int dlzka) {
     HRAC* novyHrac = malloc(sizeof(HRAC));

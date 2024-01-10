@@ -1,10 +1,5 @@
-﻿#include <stdio.h>
-#include <SDL.h>
-#include <SDL_image.h>
-#include <SDL_ttf.h>
-#include "hracie_pole.h"
-#include "hrac.h"
-// #include "menu.h"
+﻿#include "client_hracie_pole.h"
+
 
 #define V_BUNKA 10
 #define FRAME_RATE 80
@@ -19,8 +14,13 @@ SDL_Texture *apple_image_texture;
 SDL_Surface *grass_image_surface;
 SDL_Texture *grass_image_texture;
 
-SDL_Surface *snake_image_surface;
-SDL_Texture *snake_image_texture;
+//snake_image_surface je v hracovi priamo
+//SDL_Texture *snake_image_texture;
+SDL_Surface *snake1_image_surface;
+SDL_Texture *snake1_image_texture;
+
+SDL_Surface *snake2_image_surface;
+SDL_Texture *snake2_image_texture;
 
 SDL_Rect appleRect = {0, 0, V_BUNKA, V_BUNKA};
 
@@ -32,7 +32,7 @@ void randomFood()
 	int foodX = rand() % (BOARD_SIZE_X / V_BUNKA);
 	int foodY = rand() % (BOARD_SIZE_Y / V_BUNKA);
 
-	while (gameBoard[foodX][foodY] == HAD)
+	while ((gameBoard[foodX][foodY] == HAD1) || (gameBoard[foodX][foodY] == HAD2))
 	{
 		foodX = rand() % BOARD_SIZE_X;
 		foodY = rand() % BOARD_SIZE_Y;
@@ -46,18 +46,26 @@ void randomFood()
 	// SDL_RenderPresent(rendererGame);
 }
 
-void initSnake(HRAC *hrac)
+void initSnake(HRAC *hrac1, HRAC *hrac2)
 {
-	hrac->HADIK->snakeBodyX[0] = hrac->HADIK->x; // fix
-	hrac->HADIK->snakeBodyY[0] = hrac->HADIK->y;
-
-	for (int i = 0; i < hrac->HADIK->dlzka; i++)
+	hrac1->HADIK->snakeBodyX[0] = hrac1->HADIK->x;
+	hrac1->HADIK->snakeBodyY[0] = hrac1->HADIK->y;
+	for (int i = 0; i < hrac1->HADIK->dlzka; i++)
 	{
-		gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
+		gameBoard[hrac1->HADIK->snakeBodyX[i]][hrac1->HADIK->snakeBodyY[i]] = HAD1;
 	}
+	hrac2->HADIK->snakeBodyX[0] = hrac2->HADIK->x;
+	hrac2->HADIK->snakeBodyY[0] = hrac2->HADIK->y;
+	for (int i = 0; i < hrac2->HADIK->dlzka; i++)
+	{
+		gameBoard[hrac2->HADIK->snakeBodyX[i]][hrac2->HADIK->snakeBodyY[i]] = HAD2;
+	}
+
+	// snake1_image_surface=hrac1->snake_image_surface;
+	// snake2_image_surface= hrac2->snake_image_surface;
 }
 
-void initBoard()
+void initBoard(HRAC* hrac1, HRAC* hrac2)
 {
 
 	for (int i = 0; i < BOARD_SIZE_X; ++i)
@@ -90,19 +98,22 @@ void initBoard()
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 
-	snake_image_surface = IMG_Load("images/snake_pattern.jpg");
-	if (!snake_image_surface)
+
+	snake1_image_texture = SDL_CreateTextureFromSurface(rendererGame, hrac1->snake_image_surface);
+
+	if (!snake1_image_texture)
 	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
-	snake_image_texture = SDL_CreateTextureFromSurface(rendererGame, snake_image_surface);
-	if (!snake_image_texture)
+
+	snake2_image_texture = SDL_CreateTextureFromSurface(rendererGame, hrac2->snake_image_surface);
+	if (!snake2_image_texture)
 	{
 		SDL_Log("Failed to initialize SDL_image: %s\n", IMG_GetError());
 	}
 }
 
-void initGame()
+void initGame(HRAC* hrac1, HRAC* hrac2)
 {
 
 	if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
@@ -121,7 +132,6 @@ void initGame()
 	{
 		fprintf(stderr, "TTF could not initialize! TTF_Error: %s\n", SDL_GetError());
 	}
-	
 
 	windowGame = SDL_CreateWindow("Client", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, BOARD_SIZE_X, BOARD_SIZE_Y, SDL_WINDOW_SHOWN);
 	if (windowGame == NULL)
@@ -140,7 +150,7 @@ void initGame()
 	initBoard(hrac1, hrac2);
 }
 
-void drawGameBoard()
+void drawGameBoard(HRAC* hrac1, HRAC* hrac2)
 {
 	SDL_RenderClear(rendererGame);
 	for (int i = 0; i < BOARD_SIZE_X; ++i)
@@ -156,10 +166,16 @@ void drawGameBoard()
 					fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
 				}
 				break;
-			case HAD:
-				if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
+			case HAD1:
+				if (SDL_RenderCopy(rendererGame, snake1_image_texture, NULL, &cellRect) != 0)
 				{
-					fprintf(stderr, "Failed to render image: %s\n", SDL_GetError());
+					fprintf(stderr, "Failed to render snake1_image_texture image: %s\n", SDL_GetError());
+				}
+				break;
+			case HAD2:
+				if (SDL_RenderCopy(rendererGame, snake2_image_texture, NULL, &cellRect) != 0)
+				{
+					fprintf(stderr, "Failed to render  snake2_image_texture image: %s\n", SDL_GetError());
 				}
 				break;
 			case JEDLO:
@@ -200,17 +216,30 @@ void cleanupSDL()
 		grass_image_texture = NULL;
 	}
 
-	if (snake_image_surface)
+	if (snake1_image_surface)
 	{
-		SDL_FreeSurface(snake_image_surface);
-		snake_image_surface = NULL;
+		SDL_FreeSurface(snake1_image_surface);
+		snake1_image_surface = NULL;
 	}
 
-	if (snake_image_texture)
+	if (snake1_image_texture)
 	{
-		SDL_DestroyTexture(snake_image_texture);
-		snake_image_texture = NULL;
+		SDL_DestroyTexture(snake1_image_texture);
+		snake1_image_texture = NULL;
 	}
+
+	if (snake2_image_surface)
+	{
+		SDL_FreeSurface(snake2_image_surface);
+		snake2_image_surface = NULL;
+	}
+
+	if (snake2_image_texture)
+	{
+		SDL_DestroyTexture(snake2_image_texture);
+		snake2_image_texture = NULL;
+	}
+
 	SDL_DestroyRenderer(rendererGame);
 	SDL_DestroyWindow(windowGame);
 	SDL_Quit();
@@ -273,20 +302,20 @@ void gameOver(HRAC* hrac) {
 	SDL_DestroyTexture(textTexture);
 }
 
-void renderCell(HRAC *hrac)
+void renderCellH1(HRAC *hrac1)
 {
 	SDL_Rect cellRect = {0, 0, V_BUNKA, V_BUNKA};
-	cellRect.x = hrac->HADIK->x * V_BUNKA;
-	cellRect.y = hrac->HADIK->y * V_BUNKA;
-	if (SDL_RenderCopy(rendererGame, snake_image_texture, NULL, &cellRect) != 0)
+	cellRect.x = hrac1->HADIK->x * V_BUNKA;
+	cellRect.y = hrac1->HADIK->y * V_BUNKA;
+	if (SDL_RenderCopy(rendererGame, snake1_image_texture, NULL, &cellRect) != 0)  
 	{
-		fprintf(stderr, "Failed to render snake image: %s\n", SDL_GetError());
+		fprintf(stderr, "Failed to render snake1_image_texture image: %s\n", SDL_GetError());
 	}
-	if (hrac->HADIK->snakeDirectionX == 1)
+	if (hrac1->HADIK->snakeDirectionX == 1)
 	{
 	}
-	cellRect.x = hrac->HADIK->previousTailX * V_BUNKA;
-	cellRect.y = hrac->HADIK->previousTailY * V_BUNKA;
+	cellRect.x = hrac1->HADIK->previousTailX * V_BUNKA;
+	cellRect.y = hrac1->HADIK->previousTailY * V_BUNKA;
 	//SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->previousTailX, hrac->HADIK->previousTailY);
 	if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
 	{
@@ -296,10 +325,38 @@ void renderCell(HRAC *hrac)
 	{
 		fprintf(stderr, "Failed to render apple image: %s\n", SDL_GetError());
 	}
+
 	SDL_RenderPresent(rendererGame);
 }
 
-void updateSnakePosition(HRAC *hrac)
+void renderCellH2(HRAC *hrac2)
+{
+	SDL_Rect cellRect = {0, 0, V_BUNKA, V_BUNKA};
+	cellRect.x = hrac2->HADIK->x * V_BUNKA;
+	cellRect.y = hrac2->HADIK->y * V_BUNKA;
+	if (SDL_RenderCopy(rendererGame, snake2_image_texture, NULL, &cellRect) != 0)  //////////// !! snake1_image_texture FIX!
+	{
+		fprintf(stderr, "Failed to render snake2_image_texture image: %s\n", SDL_GetError());
+	}
+	if (hrac2->HADIK->snakeDirectionX == 1)
+	{
+	}
+	cellRect.x = hrac2->HADIK->previousTailX * V_BUNKA;
+	cellRect.y = hrac2->HADIK->previousTailY * V_BUNKA;
+	//SDL_Log("chvost na vymazanie x: %d, y: %d", hrac->HADIK->previousTailX, hrac->HADIK->previousTailY);
+	if (SDL_RenderCopy(rendererGame, grass_image_texture, NULL, &cellRect) != 0)
+	{
+		fprintf(stderr, "Failed to render grass image: %s\n", SDL_GetError());
+	}
+	if (SDL_RenderCopy(rendererGame, apple_image_texture, NULL, &appleRect) != 0)
+	{
+		fprintf(stderr, "Failed to render apple image: %s\n", SDL_GetError());
+	}
+
+	SDL_RenderPresent(rendererGame);
+}
+
+void updateSnakePosition(HRAC *hrac, enum CellType pHAD)
 {
 	gameBoard[hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1]][hrac->HADIK->snakeBodyY[hrac->HADIK->dlzka - 1]] = PRAZDNE;
 	hrac->HADIK->previousTailX = hrac->HADIK->snakeBodyX[hrac->HADIK->dlzka - 1];
@@ -334,11 +391,10 @@ void updateSnakePosition(HRAC *hrac)
 			randomFood();
 		}
 
-		if (gameBoard[newSnakeX][newSnakeY] == HAD)
+		if (gameBoard[newSnakeX][newSnakeY] == HAD1 || gameBoard[newSnakeX][newSnakeY] == HAD2)
 		{
 			//SDL_Log("Prehral si! Zjedol si hada");
-			showMessageBox("Game Over", "Prehral si! Zjedol si hada", "Spat do menu", hrac);
-			showMessage("Simple Message Box", "Hello from SDL!", SDL_MESSAGEBOX_INFORMATION);
+			
 		}
 		//// Update the head position
 		hrac->HADIK->x = newSnakeX;
@@ -348,157 +404,17 @@ void updateSnakePosition(HRAC *hrac)
 		//// Update the board with the new snake positions
 		for (int i = 0; i < hrac->HADIK->dlzka; i++)
 		{
-			gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = HAD;
+			gameBoard[hrac->HADIK->snakeBodyX[i]][hrac->HADIK->snakeBodyY[i]] = pHAD;
 		}
 	}
 }
 
-void gameLoop(HRAC *hrac1, HRAC *hrac2, SDL_Event *event)
+void gameLoop(HRAC *hrac1, HRAC *hrac2)
 {
-	// while (!quit)
-	// {
-	// 	// Handle events
-	// 	while (SDL_PollEvent(event))
-	// 	{
-	// 		switch (event->type)
-	// 		{
-	// 		case SDL_QUIT:
-	// 			quit = 1;
-	// 			break;
-	// 		case SDL_KEYDOWN:
-	// 			if (event->key.keysym.sym == SDLK_q && (SDL_GetModState() & KMOD_CTRL) ||
-	// 				event->key.keysym.sym == SDLK_c && (SDL_GetModState() & KMOD_CTRL))
-	// 			{
-	// 				// ctrl + q alebo ctrl + c, pre zrusenie hry
-	// 				quit = 1; // ToDo, toto hadze read access error
-
-	// 				cleanupSDL(hrac1);
-	// 				cleanupSDL(hrac2);
-	// 				// initMenu();
-	// 				// menuLoop(hrac);
-	// 			}
-	// 			else
-	// 			{
-	// 				switch (event->key.keysym.sym)
-	// 				{
-	// 				case SDLK_UP:
-	// 					if (hrac1->HADIK->snakeDirectionY != 1 || hrac1->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
-	// 					{
-	// 						hrac1->HADIK->snakeDirectionX = 0;
-	// 						hrac1->HADIK->snakeDirectionY = -1;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-
-	// 					break;
-	// 				case SDLK_DOWN:
-	// 					if (hrac1->HADIK->snakeDirectionY != -1 || hrac1->HADIK->dlzka == 1)
-	// 					{
-	// 						hrac1->HADIK->snakeDirectionX = 0;
-	// 						hrac1->HADIK->snakeDirectionY = 1;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-	// 					break;
-	// 				case SDLK_LEFT:
-	// 					if (hrac1->HADIK->snakeDirectionX != 1 || hrac1->HADIK->dlzka == 1)
-	// 					{
-	// 						hrac1->HADIK->snakeDirectionX = -1;
-	// 						hrac1->HADIK->snakeDirectionY = 0;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-	// 					break;
-	// 				case SDLK_RIGHT:
-	// 					if (hrac1->HADIK->snakeDirectionX != -1 || hrac1->HADIK->dlzka == 1)
-	// 					{
-	// 						hrac1->HADIK->snakeDirectionX = 1;
-	// 						hrac1->HADIK->snakeDirectionY = 0;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-	// 					break;
-	// 				case SDLK_w:
-	// 					if (hrac2->HADIK->snakeDirectionY != 1 || hrac2->HADIK->dlzka == 1) // ak nejde dole, moze ist hore
-	// 					{
-	// 						hrac2->HADIK->snakeDirectionX = 0;
-	// 						hrac2->HADIK->snakeDirectionY = -1;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-
-	// 					break;
-	// 				case SDLK_s:
-	// 					if (hrac2->HADIK->snakeDirectionY != -1 || hrac2->HADIK->dlzka == 1)
-	// 					{
-	// 						hrac2->HADIK->snakeDirectionX = 0;
-	// 						hrac2->HADIK->snakeDirectionY = 1;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-	// 					break;
-	// 				case SDLK_a:
-	// 					if (hrac2->HADIK->snakeDirectionX != 1 || hrac2->HADIK->dlzka == 1)
-	// 					{
-	// 						hrac2->HADIK->snakeDirectionX = -1;
-	// 						hrac2->HADIK->snakeDirectionY = 0;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-	// 					break;
-	// 				case SDLK_d:
-	// 					if (hrac2->HADIK->snakeDirectionX != -1 || hrac2->HADIK->dlzka == 1)
-	// 					{
-	// 						hrac2->HADIK->snakeDirectionX = 1;
-	// 						hrac2->HADIK->snakeDirectionY = 0;
-	// 					}
-	// 					else
-	// 					{
-	// 						SDL_Log("Illegal move!");
-	// 						// printf("Illegal move!");
-	// 					}
-	// 					break;
-	// 				}
-
-	// 				// Handle arrow key events to change the snake's direction
-	// 			}
-	// 			break;
-	// 		}
-	// 	}
-	// 	if (!quit)
-	// 	{
-	// 		updateSnakePosition(hrac1);
-	// 		updateSnakePosition(hrac2);
-	// 		SDL_Delay(FRAME_RATE);
-	// 	}
-	// }
 	while (!quit)
 	{
-		updateSnakePosition(hrac1);
-		//renderCell(hrac1);
-		updateSnakePosition(hrac2);
-		//renderCell(hrac2);
+		updateSnakePosition(hrac1, HAD1);
+		updateSnakePosition(hrac2, HAD2);
 		SDL_Delay(FRAME_RATE);
 	}
 }

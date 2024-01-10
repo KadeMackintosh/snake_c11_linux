@@ -8,8 +8,8 @@
 #include <unistd.h> // read(), write(), close()
 #include <pthread.h>
 #include <SDL2/SDL.h>
-#include "hracie_pole.h"
-#include "hrac.h"
+#include "client_hracie_pole.h"
+#include "client_hrac.h"
 #define MAX 80
 #define PORT 8080
 #define SA struct sockaddr
@@ -182,7 +182,7 @@ void *playerThreadFunc(void *arg)
 	// struct arguments *localArgs = (struct arguments *)arg;
 	//SDL_Event *event = (SDL_Event *)arg;
 	// pthread_mutex_lock(&mutex);
-	gameLoop(hrac1, hrac2, NULL);
+	gameLoop(hrac1, hrac2);
 	// pthread_mutex_unlock(&mutex);
 	//  cleanupSDL();
 	return NULL;
@@ -192,8 +192,8 @@ void *vykreslovacieVlaknoFunc(void *arg)
 {
 	while (1)
 	{
-		renderCell(hrac1);
-		renderCell(hrac2);
+		renderCellH1(hrac1);
+		renderCellH2(hrac2);
 	}
 
 	// HRAC* hrac = (HRAC*)arg;
@@ -249,6 +249,12 @@ int main()
 	hrac1->HADIK->previousTailX = 0;
 	hrac1->HADIK->previousTailY = 0;
 
+	hrac1->snake_image_surface = IMG_Load("images/snake_pattern.jpg");
+	if (!(hrac1->snake_image_surface))
+	{
+		SDL_Log("Failed to initialize Snake skin surface - SDL_image: %s\n", IMG_GetError());
+	}
+
 	hrac2 = vytvorHraca("Marek", 5);
 	hrac2->HADIK->x = 1;
 	hrac2->HADIK->y = 3;
@@ -257,12 +263,17 @@ int main()
 	hrac2->HADIK->previousTailX = 0;
 	hrac2->HADIK->previousTailY = 0;
 	
+	hrac2->snake_image_surface = IMG_Load("images/snake2_pattern.png");
+	
+	if (!(hrac1->snake_image_surface))
+	{
+		SDL_Log("Failed to initialize Snake skin surface - SDL_image: %s\n", IMG_GetError());
+	}
+
 	pthread_t vlaknoHrac1, vykreslovacieVlakno;
 
 
-	initGame();
-	initSnake(hrac1);
-	initSnake(hrac2);
+	initGame(hrac1, hrac2);
 	// initSnake(hrac2);
 	randomFood();
 	drawGameBoard();
