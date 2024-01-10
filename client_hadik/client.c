@@ -314,9 +314,11 @@ int main()
 	pthread_join(vykreslovacieVlakno, NULL);
 	pthread_join(sendThread, NULL);
 	// close the socket
+
 	close(sockfd);
-	//free(sendArgs);
-	//destroyHrac(hrac1);
-	//destroyHrac(hrac2);
+	cleanupSDL();
+	free(sendArgs);
+	destroyHrac(hrac1);
+	destroyHrac(hrac2);
 	return 0;
 }

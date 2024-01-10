@@ -302,9 +302,10 @@ int main()
 	pthread_join(vlaknoHraci, NULL);
 	pthread_join(vykreslovacieVlakno, NULL);
 	
-	//free(sendArgs);
-	//destroyHrac(hrac1);
-	//destroyHrac(hrac2);
+	cleanupSDL();
+	free(sendArgs);
+	destroyHrac(hrac1);
+	destroyHrac(hrac2);
 	close(sockfd);
 	return 0;
 }
