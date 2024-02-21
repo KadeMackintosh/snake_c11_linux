@@ -7,6 +7,9 @@
         "sdl_image.h": "c",
         "menu.h": "c",
         "sdl_ttf.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "strings.h": "c",
+        "client_hracie_pole.h": "c",
+        "client_hrac.h": "c"
     }
 }

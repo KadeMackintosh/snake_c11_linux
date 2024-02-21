@@ -7,11 +7,15 @@
 
 #include <malloc.h>
 #include <string.h>
+#include <SDL.h>
+#include <SDL_image.h>
 
 #define MAX_SNAKE_LENGTH 100
 
 typedef struct hrac {
     char* meno;
+    SDL_Surface *snake_image_surface;
+    int hracVyhral;
     struct hadik {
         int dlzka;
         int x;
@@ -20,6 +24,8 @@ typedef struct hrac {
         int* snakeBodyY;
         int snakeDirectionX;
         int snakeDirectionY;
+        int previousTailX;
+        int previousTailY;
     } *HADIK;
 } HRAC;
 

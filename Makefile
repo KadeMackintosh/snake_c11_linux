@@ -1,7 +1,7 @@
 # Compiler and flags
 CC = gcc
 CFLAGS = -Wall -Wextra -std=c11 $(shell sdl2-config --cflags) $(shell pkg-config --cflags SDL2_image) $(shell pkg-config --cflags SDL2_ttf)
-LDFLAGS = $(shell sdl2-config --libs) $(shell pkg-config --libs SDL2_image) $(shell pkg-config --libs SDL2_ttf)
+LDFLAGS = $(shell sdl2-config --libs) $(shell pkg-config --libs SDL2_image) $(shell pkg-config --libs SDL2_ttf) -lcsfml-graphics -lcsfml-window -lcsfml-system -lcsfml-network
 
 # Source files and output executable
 SRCS = main.c hrac.c menu.c hracie_pole.c
